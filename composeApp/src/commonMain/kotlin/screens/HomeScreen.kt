@@ -1,9 +1,11 @@
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -13,9 +15,28 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import data.DatabaseHelper
+import kotlinx.coroutines.launch
+import viewmodels.HomeViewModel
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(viewModel: HomeViewModel) {
+    val scope = rememberCoroutineScope()
+    val expenses by viewModel.expenses.collectAsState()
+    val categories by viewModel.categories.collectAsState()
+    val favoriteCategories by viewModel.favoriteCategories.collectAsState()
+    val totalBalance by remember { mutableStateOf(viewModel.totalBalance) }
+    val totalIncome by remember { mutableStateOf(viewModel.totalIncome) }
+    val totalExpense by remember { mutableStateOf(viewModel.totalExpense) }
+
+    LaunchedEffect(Unit) {
+        scope.launch {
+            viewModel.loadExpenses()
+            viewModel.loadCategories()
+            viewModel.loadFavoriteCategories()
+        }
+    }
+
     Column(
         modifier = Modifier.fillMaxSize().background(Color(0xFFF5F5F5))
     ) {
@@ -23,13 +44,24 @@ fun HomeScreen() {
         TopBar()
         
         // Balance Card
-        BalanceCard()
+        BalanceCard(
+            totalBalance = totalBalance,
+            totalIncome = totalIncome,
+            totalExpense = totalExpense
+        )
         
         // Favorite Categories
-        FavoriteCategories()
+        FavoriteCategories(
+            categories = favoriteCategories,
+            onCategoryClick = { category ->
+                scope.launch {
+                    viewModel.toggleCategoryFavorite(category)
+                }
+            }
+        )
         
         // Recent Spendings
-        RecentSpendings()
+        RecentSpendings(expenses = expenses)
         
         // Bottom Navigation
         BottomNavigation()
@@ -75,7 +107,11 @@ private fun TopBar() {
 }
 
 @Composable
-private fun BalanceCard() {
+private fun BalanceCard(
+    totalBalance: Double,
+    totalIncome: Double,
+    totalExpense: Double
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -89,14 +125,14 @@ private fun BalanceCard() {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Icon(
-                Icons.Default.AccountBalance,
+                Icons.Default.Check,
                 contentDescription = "Balance",
                 tint = Color.White,
                 modifier = Modifier.size(32.dp)
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                "₹ 86783.30",
+                "₹ ${String.format("%.2f", totalBalance)}",
                 color = Color.White,
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold
@@ -113,12 +149,12 @@ private fun BalanceCard() {
             ) {
                 Column {
                     Text(
-                        "Salary",
+                        "Income",
                         color = Color.White.copy(alpha = 0.8f),
                         fontSize = 14.sp
                     )
                     Text(
-                        "₹ 52000.00",
+                        "₹ ${String.format("%.2f", totalIncome)}",
                         color = Color.White,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
@@ -126,12 +162,12 @@ private fun BalanceCard() {
                 }
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
-                        "Spend",
+                        "Expense",
                         color = Color.White.copy(alpha = 0.8f),
                         fontSize = 14.sp
                     )
                     Text(
-                        "₹ 32000.00",
+                        "₹ ${String.format("%.2f", totalExpense)}",
                         color = Color.White,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
@@ -143,7 +179,10 @@ private fun BalanceCard() {
 }
 
 @Composable
-private fun FavoriteCategories() {
+private fun FavoriteCategories(
+    categories: List<DatabaseHelper.CategoryModel>,
+    onCategoryClick: (DatabaseHelper.CategoryModel) -> Unit
+) {
     Column(modifier = Modifier.padding(16.dp)) {
         Text(
             "Favourite Categories",
@@ -155,18 +194,28 @@ private fun FavoriteCategories() {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            CategoryItem("Gift", Icons.Default.CardGiftcard)
-            CategoryItem("Shopping", Icons.Default.ShoppingBag)
-            CategoryItem("Travel", Icons.Default.DirectionsCar)
-            CategoryItem("See All", Icons.Default.ArrowForward)
+            categories.take(4).forEach { category ->
+                CategoryItem(
+                    title = category.name,
+                    icon = category.icon,
+                    isFavorite = category.isFavorite,
+                    onClick = { onCategoryClick(category) }
+                )
+            }
         }
     }
 }
 
 @Composable
-private fun CategoryItem(title: String, icon: ImageVector) {
+private fun CategoryItem(
+    title: String,
+    icon: String,
+    isFavorite: Boolean,
+    onClick: () -> Unit
+) {
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.clickable(onClick = onClick)
     ) {
         Box(
             modifier = Modifier
@@ -176,7 +225,7 @@ private fun CategoryItem(title: String, icon: ImageVector) {
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                icon,
+                Icons.Default.ShoppingCart, // TODO: Map icon string to actual icon
                 contentDescription = title,
                 tint = Color(0xFF1A237E),
                 modifier = Modifier.size(24.dp)
@@ -188,7 +237,7 @@ private fun CategoryItem(title: String, icon: ImageVector) {
 }
 
 @Composable
-private fun RecentSpendings() {
+private fun RecentSpendings(expenses: List<DatabaseHelper.ExpenseModel>) {
     Column(modifier = Modifier.padding(16.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -201,47 +250,18 @@ private fun RecentSpendings() {
                 fontWeight = FontWeight.Bold
             )
             TextButton(onClick = {}) {
-                Text("Weekly")
-                Icon(Icons.Default.ArrowDropDown, contentDescription = "Select period")
+                Text("See All")
             }
         }
-        
-        SpendingItem(
-            "Nike Store",
-            "Clothing",
-            "- ₹1782.00",
-            "Tax : ₹320.00",
-            Icons.Default.ShoppingBag
-        )
-        
-        SpendingItem(
-            "Refound From Amazon",
-            "Shopping",
-            "+ ₹15582.00",
-            "Tax : ₹520.00",
-            Icons.Default.ShoppingCart,
-            isPositive = true
-        )
-        
-        SpendingItem(
-            "Uber",
-            "Travel",
-            "- ₹120.00",
-            "Tax : ₹120.00",
-            Icons.Default.DirectionsCar
-        )
+        Spacer(modifier = Modifier.height(16.dp))
+        expenses.take(5).forEach { expense ->
+            ExpenseItem(expense)
+        }
     }
 }
 
 @Composable
-private fun SpendingItem(
-    title: String,
-    category: String,
-    amount: String,
-    tax: String,
-    icon: ImageVector,
-    isPositive: Boolean = false
-) {
+private fun ExpenseItem(expense: DatabaseHelper.ExpenseModel) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -252,67 +272,56 @@ private fun SpendingItem(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(40.dp)
                     .clip(CircleShape)
-                    .background(Color.White),
+                    .background(Color.LightGray),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(icon, contentDescription = null)
+                Icon(
+                    Icons.Default.ShoppingCart, // TODO: Map category to icon
+                    contentDescription = expense.category,
+                    tint = Color(0xFF1A237E)
+                )
             }
-            Spacer(modifier = Modifier.width(12.dp))
-            Column {
-                Text(title, fontWeight = FontWeight.Medium)
-                Text(category, color = Color.Gray, fontSize = 14.sp)
+            Column(modifier = Modifier.padding(start = 12.dp)) {
+                Text(
+                    expense.title,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    expense.category,
+                    color = Color.Gray,
+                    fontSize = 14.sp
+                )
             }
         }
-        Column(horizontalAlignment = Alignment.End) {
-            Text(
-                amount,
-                color = if (isPositive) Color.Green else Color.Red,
-                fontWeight = FontWeight.Bold
-            )
-            Text(tax, color = Color.Gray, fontSize = 12.sp)
-        }
+        Text(
+            "₹ ${String.format("%.2f", expense.amount)}",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold,
+            color = if (expense.type == "expense") Color.Red else Color.Green
+        )
     }
 }
 
 @Composable
 private fun BottomNavigation() {
-    NavigationBar(
-        modifier = Modifier.fillMaxWidth(),
-        containerColor = Color.White
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.White)
+            .padding(16.dp),
+        horizontalArrangement = Arrangement.SpaceAround
     ) {
-        NavigationBarItem(
-            icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
-            selected = true,
-            onClick = {}
-        )
-        NavigationBarItem(
-            icon = { Icon(Icons.Default.CreditCard, contentDescription = "Cards") },
-            selected = false,
-            onClick = {}
-        )
-        NavigationBarItem(
-            icon = { 
-                FloatingActionButton(
-                    onClick = {},
-                    containerColor = Color(0xFF00BCD4)
-                ) {
-                    Icon(Icons.Default.Add, contentDescription = "Add")
-                }
-            },
-            selected = false,
-            onClick = {}
-        )
-        NavigationBarItem(
-            icon = { Icon(Icons.Default.PieChart, contentDescription = "Analytics") },
-            selected = false,
-            onClick = {}
-        )
-        NavigationBarItem(
-            icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
-            selected = false,
-            onClick = {}
-        )
+        IconButton(onClick = {}) {
+            Icon(Icons.Default.Home, contentDescription = "Home")
+        }
+        IconButton(onClick = {}) {
+            Icon(Icons.Default.Add, contentDescription = "Add")
+        }
+        IconButton(onClick = {}) {
+            Icon(Icons.Default.Person, contentDescription = "Profile")
+        }
     }
 } 

@@ -1,4 +1,5 @@
 [versions]
+activityCompose = "1.8.2"
 agp = "8.5.2"
 android-compileSdk = "34"
 android-minSdk = "24"
@@ -21,6 +22,7 @@ navigation = "2.7.0-alpha07"
 landscapist = "2.4.0"
 room = "2.7.0"
 ksp = "2.0.20-1.0.25"
+runtime = "2.0.1"
 sqlite = "2.5.0"
 koin = "4.0.0"
 #voyager
@@ -34,10 +36,16 @@ stately-common="2.1.0"
 
 [libraries]
 #navigation and Room
+android-driver = { module = "app.cash.sqldelight:android-driver", version.ref = "runtime" }
+androidx-activity-compose-v182 = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
 compose-navigation = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigation" }
+coroutines-extensions = { module = "app.cash.sqldelight:coroutines-extensions", version.ref = "runtime" }
 landscapist-coil3 = { module = "com.github.skydoves:landscapist-coil3", version.ref = "landscapist" }
+native-driver = { module = "app.cash.sqldelight:native-driver", version.ref = "runtime" }
+primitive-adapters = { module = "app.cash.sqldelight:primitive-adapters", version.ref = "runtime" }
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
+runtime = { module = "app.cash.sqldelight:runtime", version.ref = "runtime" }
 sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }

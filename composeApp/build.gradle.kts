@@ -10,8 +10,6 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.googleService)
-    alias(libs.plugins.room)
-    alias(libs.plugins.ksp)
     alias(libs.plugins.kotlinxSerialization)
     id("app.cash.sqldelight") version "2.0.1"
 }
@@ -50,13 +48,13 @@ kotlin {
                 implementation(libs.androidx.lifecycle.viewmodel)
                 implementation(libs.androidx.lifecycle.runtime.compose)
 
-                // DateTime
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
-
                 // SQLDelight
                 implementation("app.cash.sqldelight:runtime:2.0.1")
                 implementation("app.cash.sqldelight:coroutines-extensions:2.0.1")
                 implementation("app.cash.sqldelight:primitive-adapters:2.0.1")
+                
+                // DateTime
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
             }
         }
 
@@ -116,8 +114,14 @@ android {
     }
 }
 
-room {
-    schemaDirectory("$projectDir/schemas")
+sqldelight {
+    databases {
+        create("ExpenseDatabase") {
+            packageName.set("com.shashank.expense.tracker.db")
+            schemaOutputDirectory.set(file("src/commonMain/sqldelight"))
+            verifyMigrations.set(true)
+        }
+    }
 }
 
 dependencies {
@@ -132,15 +136,6 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "com.shashank.expense.tracker"
             packageVersion = "1.0.0"
-        }
-    }
-}
-
-// Add SQLDelight configuration
-sqldelight {
-    databases {
-        create("ExpenseDatabase") {
-            packageName.set("com.shashank.expense.tracker.db")
         }
     }
 }

@@ -4,42 +4,46 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.db.SqlDriver
 import com.shashank.expense.tracker.db.ExpenseDatabase
+import com.shashank.expense.tracker.db.Expense
+import com.shashank.expense.tracker.db.Category
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
 
-data class Expense(
-    val id: Long,
-    val title: String,
-    val amount: Double,
-    val category: String,
-    val type: String,
-    val tax: Double,
-    val date: Long,
-    val createdAt: Long
-)
-
-data class Category(
-    val id: Long,
-    val name: String,
-    val icon: String,
-    val isFavorite: Boolean
-)
-
 class DatabaseHelper(sqlDriver: SqlDriver) {
     private val database = ExpenseDatabase(sqlDriver)
+    private val queries = database.expenseDatabaseQueries
+    
+    // Domain Models
+    data class ExpenseModel(
+        val id: Long,
+        val title: String,
+        val amount: Double,
+        val category: String,
+        val type: String,
+        val tax: Double,
+        val date: Long,
+        val createdAt: Long
+    )
+    
+    data class CategoryModel(
+        val id: Long,
+        val name: String,
+        val icon: String,
+        val isFavorite: Boolean
+    )
     
     // Expense Operations
-    fun getAllExpenses(): Flow<List<Expense>> =
-        database.expenseQueries
+    fun getAllExpenses(): Flow<List<ExpenseModel>> =
+        queries
             .getAllExpenses()
             .asFlow()
             .mapToList(Dispatchers.IO)
-            .map { expenses ->
+            .map { expenses: List<Expense> ->
                 expenses.map { expense ->
-                    Expense(
+                    ExpenseModel(
                         id = expense.id,
                         title = expense.title,
                         amount = expense.amount,
@@ -52,14 +56,14 @@ class DatabaseHelper(sqlDriver: SqlDriver) {
                 }
             }
     
-    fun getRecentExpenses(limit: Long): Flow<List<Expense>> =
-        database.expenseQueries
+    fun getRecentExpenses(limit: Long): Flow<List<ExpenseModel>> =
+        queries
             .getRecentExpenses(limit)
             .asFlow()
             .mapToList(Dispatchers.IO)
-            .map { expenses ->
+            .map { expenses: List<Expense> ->
                 expenses.map { expense ->
-                    Expense(
+                    ExpenseModel(
                         id = expense.id,
                         title = expense.title,
                         amount = expense.amount,
@@ -79,7 +83,7 @@ class DatabaseHelper(sqlDriver: SqlDriver) {
         type: String,
         tax: Double
     ) {
-        database.expenseQueries.insertExpense(
+        queries.insertExpense(
             title = title,
             amount = amount,
             category = category,
@@ -90,14 +94,14 @@ class DatabaseHelper(sqlDriver: SqlDriver) {
     }
     
     // Category Operations
-    fun getAllCategories(): Flow<List<Category>> =
-        database.categoryQueries
+    fun getAllCategories(): Flow<List<CategoryModel>> =
+        queries
             .getAllCategories()
             .asFlow()
             .mapToList(Dispatchers.IO)
-            .map { categories ->
+            .map { categories: List<Category> ->
                 categories.map { category ->
-                    Category(
+                    CategoryModel(
                         id = category.id,
                         name = category.name,
                         icon = category.icon,
@@ -106,14 +110,14 @@ class DatabaseHelper(sqlDriver: SqlDriver) {
                 }
             }
     
-    fun getFavoriteCategories(): Flow<List<Category>> =
-        database.categoryQueries
+    fun getFavoriteCategories(): Flow<List<CategoryModel>> =
+        queries
             .getFavoriteCategories()
             .asFlow()
             .mapToList(Dispatchers.IO)
-            .map { categories ->
+            .map { categories: List<Category> ->
                 categories.map { category ->
-                    Category(
+                    CategoryModel(
                         id = category.id,
                         name = category.name,
                         icon = category.icon,
@@ -127,7 +131,7 @@ class DatabaseHelper(sqlDriver: SqlDriver) {
         icon: String,
         isFavorite: Boolean = false
     ) {
-        database.categoryQueries.insertCategory(
+        queries.insertCategory(
             name = name,
             icon = icon,
             is_favorite = if (isFavorite) 1L else 0L
@@ -135,7 +139,7 @@ class DatabaseHelper(sqlDriver: SqlDriver) {
     }
     
     suspend fun updateCategoryFavorite(id: Long, isFavorite: Boolean) {
-        database.categoryQueries.updateCategoryFavorite(
+        queries.updateCategoryFavorite(
             id = id,
             isFavorite = if (isFavorite) 1L else 0L
         )
