@@ -1,0 +1,60 @@
+CREATE TABLE Expense (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    amount REAL NOT NULL,
+    category TEXT NOT NULL,
+    type TEXT NOT NULL,
+    tax REAL NOT NULL,
+    date INTEGER NOT NULL,
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+);
+
+CREATE TABLE Category (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    icon TEXT NOT NULL,
+    is_favorite INTEGER NOT NULL DEFAULT 0
+);
+
+-- Queries for Expenses
+getAllExpenses:
+SELECT *
+FROM Expense
+ORDER BY date DESC;
+
+getRecentExpenses:
+SELECT *
+FROM Expense
+ORDER BY date DESC
+LIMIT :limit;
+
+getExpensesByCategory:
+SELECT *
+FROM Expense
+WHERE category = :category
+ORDER BY date DESC;
+
+insertExpense:
+INSERT INTO Expense(title, amount, category, type, tax, date)
+VALUES (?, ?, ?, ?, ?, ?);
+
+-- Queries for Categories
+getAllCategories:
+SELECT *
+FROM Category
+ORDER BY name ASC;
+
+getFavoriteCategories:
+SELECT *
+FROM Category
+WHERE is_favorite = 1
+ORDER BY name ASC;
+
+insertCategory:
+INSERT INTO Category(name, icon, is_favorite)
+VALUES (?, ?, ?);
+
+updateCategoryFavorite:
+UPDATE Category
+SET is_favorite = :isFavorite
+WHERE id = :id; 
