@@ -55,6 +55,8 @@ kotlin {
                 
                 // DateTime
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
+                implementation("io.insert-koin:koin-core:3.5.0")
+                implementation("io.insert-koin:koin-compose:1.1.0")
             }
         }
 
@@ -66,6 +68,8 @@ kotlin {
                 
                 // SQLDelight Android driver
                 implementation("app.cash.sqldelight:android-driver:2.0.1")
+                implementation("io.insert-koin:koin-android:3.5.0")
+                implementation("io.insert-koin:koin-androidx-compose:3.5.0")
             }
         }
 
