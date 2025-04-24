@@ -1,4 +1,4 @@
-package data
+package com.shashank.expense.tracker.data
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList

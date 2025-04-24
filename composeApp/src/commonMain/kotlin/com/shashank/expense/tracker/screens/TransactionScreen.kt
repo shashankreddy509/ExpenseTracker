@@ -1,4 +1,4 @@
-package screens
+package com.shashank.expense.tracker.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -28,15 +28,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.shashank.expense.tracker.utils.CategoryUtils
+import com.shashank.expense.tracker.utils.DateTimeUtils
+import com.shashank.expense.tracker.viewmodels.HomeViewModel
 import expensetracker.composeapp.generated.resources.Res
 import expensetracker.composeapp.generated.resources.ic_arrow_right
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.painterResource
-import utils.CategoryUtils
-import utils.DateTimeUtils
-import viewmodels.HomeViewModel
 
 @Composable
 fun TransactionScreen(

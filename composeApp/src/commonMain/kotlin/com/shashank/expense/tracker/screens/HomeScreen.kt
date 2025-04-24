@@ -1,4 +1,4 @@
-package screens
+package com.shashank.expense.tracker.screens
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -42,10 +42,10 @@ import expensetracker.composeapp.generated.resources.ic_transaction
 import expensetracker.composeapp.generated.resources.ic_user
 import kotlinx.datetime.*
 import org.jetbrains.compose.resources.painterResource
-import utils.CategoryUtils
-import utils.DateTimeUtils
-import viewmodels.HomeViewModel
-import viewmodels.SpendingPoint
+import com.shashank.expense.tracker.utils.CategoryUtils
+import com.shashank.expense.tracker.utils.DateTimeUtils
+import com.shashank.expense.tracker.viewmodels.HomeViewModel
+import com.shashank.expense.tracker.viewmodels.SpendingPoint
 
 data class CategoryModel(
     val id: Long,
@@ -73,7 +73,7 @@ fun MonthSelector(
         targetValue = if (isExpanded) 180f else 0f,
         label = "dropdown arrow rotation"
     )
-    
+
     Box(modifier = modifier) {
         Row(
             modifier = Modifier
@@ -86,7 +86,7 @@ fun MonthSelector(
                 targetState = selectedMonth,
                 transitionSpec = {
                     slideInVertically { height -> height } + fadeIn() togetherWith
-                    slideOutVertically { height -> -height } + fadeOut()
+                            slideOutVertically { height -> -height } + fadeOut()
                 },
                 label = "month transition"
             ) { month ->
@@ -199,7 +199,7 @@ fun HomeScreen(viewModel: HomeViewModel) {
                 targetState = selectedMonth,
                 transitionSpec = {
                     fadeIn(animationSpec = tween(300)) togetherWith
-                    fadeOut(animationSpec = tween(300))
+                            fadeOut(animationSpec = tween(300))
                 },
                 label = "content transition"
             ) { _ ->

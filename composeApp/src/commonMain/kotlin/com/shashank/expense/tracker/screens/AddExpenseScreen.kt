@@ -12,12 +12,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -40,12 +37,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.shashank.expense.tracker.screens.CategoryModel
+import com.shashank.expense.tracker.utils.CategoryUtils
+import com.shashank.expense.tracker.viewmodels.HomeViewModel
 import expensetracker.composeapp.generated.resources.Res
 import expensetracker.composeapp.generated.resources.ic_arrow_left
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
-import viewmodels.HomeViewModel
-import utils.CategoryUtils
 
 @Composable
 fun AddExpenseScreen(

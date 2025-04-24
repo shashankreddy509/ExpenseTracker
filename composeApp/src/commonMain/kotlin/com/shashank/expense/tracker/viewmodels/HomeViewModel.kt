@@ -1,17 +1,14 @@
-package viewmodels
+package com.shashank.expense.tracker.viewmodels
 
-import com.shashank.expense.tracker.db.Category as DBCategory
-import com.shashank.expense.tracker.db.Expense as DBExpense
-import data.DatabaseHelper
+import com.shashank.expense.tracker.screens.CategoryModel
+import com.shashank.expense.tracker.screens.ExpenseModel
+import com.shashank.expense.tracker.data.DatabaseHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import screens.CategoryModel
-import screens.ExpenseModel
 import kotlinx.datetime.*
-import kotlin.time.Duration.Companion.hours
-import utils.DateTimeUtils
+import com.shashank.expense.tracker.utils.DateTimeUtils
 
 data class SpendingPoint(
     val value: Float,
@@ -298,4 +295,4 @@ class HomeViewModel(
     fun selectMonth(month: Month) {
         _selectedMonth.value = month
     }
-} 
+}

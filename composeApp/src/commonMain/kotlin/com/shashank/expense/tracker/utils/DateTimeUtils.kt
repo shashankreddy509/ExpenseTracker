@@ -1,4 +1,4 @@
-package utils
+package com.shashank.expense.tracker.utils
 
 import kotlinx.datetime.*
 import kotlin.time.Duration.Companion.days
