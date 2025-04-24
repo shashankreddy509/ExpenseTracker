@@ -101,6 +101,7 @@ android {
     sourceSets["main"].apply {
         manifest.srcFile("src/androidMain/AndroidManifest.xml")
         res.srcDirs("src/androidMain/res")
+        resources.srcDirs("src/commonMain/resources")
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

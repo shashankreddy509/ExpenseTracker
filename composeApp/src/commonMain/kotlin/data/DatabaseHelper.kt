@@ -81,7 +81,8 @@ class DatabaseHelper(sqlDriver: SqlDriver) {
         amount: Double,
         category: String,
         type: String,
-        tax: Double
+        tax: Double,
+        date: Long
     ) {
         queries.insertExpense(
             title = title,
@@ -89,7 +90,7 @@ class DatabaseHelper(sqlDriver: SqlDriver) {
             category = category,
             type = type,
             tax = tax,
-            date = Clock.System.now().toEpochMilliseconds()
+            date = date
         )
     }
     
