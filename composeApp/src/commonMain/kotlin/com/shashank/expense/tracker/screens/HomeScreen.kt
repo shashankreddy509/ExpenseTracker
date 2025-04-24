@@ -220,7 +220,7 @@ fun HomeScreen(viewModel: HomeViewModel) {
                             color = Color(0xFF91919F)
                         )
                         Text(
-                            text = "$%.0f".format(totalBalance),
+                            text = "$${formatCurrency(totalBalance.toFloat())}",
                             style = MaterialTheme.typography.headlineLarge,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(vertical = 8.dp)
@@ -261,7 +261,7 @@ fun HomeScreen(viewModel: HomeViewModel) {
                                             color = Color.White
                                         )
                                         Text(
-                                            text = "$%.0f".format(totalIncome),
+                                            text = "$${formatCurrency(totalIncome.toFloat())}",
                                             style = MaterialTheme.typography.titleLarge,
                                             color = Color.White,
                                             fontWeight = FontWeight.Bold
@@ -300,7 +300,7 @@ fun HomeScreen(viewModel: HomeViewModel) {
                                             color = Color.White
                                         )
                                         Text(
-                                            text = "$%.0f".format(totalExpenses),
+                                            text = "$${formatCurrency(totalExpenses.toFloat())}",
                                             style = MaterialTheme.typography.titleLarge,
                                             color = Color.White,
                                             fontWeight = FontWeight.Bold
@@ -420,7 +420,7 @@ private fun TransactionItem(expense: ExpenseModel) {
             horizontalAlignment = Alignment.End
         ) {
             Text(
-                text = if (expense.isIncome) "+$%.0f" else "-$%.0f".format(expense.amount),
+                text = if (expense.isIncome) "+$${formatCurrency(expense.amount.toFloat())}" else "-$${formatCurrency(expense.amount.toFloat())}",
                 style = MaterialTheme.typography.titleMedium,
                 color = if (expense.isIncome) Color(0xFF00A86B) else Color(0xFFFD3C4A),
                 fontWeight = FontWeight.SemiBold
@@ -767,8 +767,8 @@ private fun SpendFrequencyGraph(
 
 private fun formatCurrency(value: Float): String {
     return when {
-        value >= 1_000_000 -> "%.1fM".format(value / 1_000_000)
-        value >= 1_000 -> "%.1fK".format(value / 1_000)
-        else -> "%.0f".format(value)
+        value >= 1_000_000 -> "${(value / 1_000_000).toInt()}M"
+        value >= 1_000 -> "${(value / 1_000).toInt()}K"
+        else -> value.toInt().toString()
     }
 } 

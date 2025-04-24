@@ -4,4 +4,6 @@ import androidx.compose.runtime.Composable
 import com.shashank.expense.tracker.data.DatabaseDriverFactory
 
 @Composable
-expect fun createDatabaseDriverFactory(): DatabaseDriverFactory 
+actual fun createDatabaseDriverFactory(): DatabaseDriverFactory {
+    return DatabaseDriverFactory()
+} 

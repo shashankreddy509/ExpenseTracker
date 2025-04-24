@@ -31,6 +31,7 @@ kotlin {
         target.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
+            linkerOpts.add("-lsqlite3")
         }
     }
     

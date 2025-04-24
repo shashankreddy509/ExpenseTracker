@@ -9,7 +9,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.shashank.expense.tracker.common.App
 import com.shashank.expense.tracker.di.initKoin
-import di.createAndroidModule
+import com.shashank.expense.tracker.di.createAndroidModule
 import org.koin.android.ext.koin.androidContext
 
 class MainActivity : ComponentActivity() {
