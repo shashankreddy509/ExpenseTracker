@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -13,8 +14,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.painterResource
@@ -30,6 +32,44 @@ fun LoginScreen(
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
+
+    fun validateEmail(email: String): Boolean {
+        return if (email.isEmpty()) {
+            emailError = "Email is required"
+            false
+        } else if (!email.matches(Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\$"))) {
+            emailError = "Please enter a valid email"
+            false
+        } else {
+            emailError = null
+            true
+        }
+    }
+
+    fun validatePassword(password: String): Boolean {
+        return if (password.isEmpty()) {
+            passwordError = "Password is required"
+            false
+        } else if (password.length < 6) {
+            passwordError = "Password must be at least 6 characters"
+            false
+        } else {
+            passwordError = null
+            true
+        }
+    }
+
+    fun validateAndLogin() {
+        val isEmailValid = validateEmail(email)
+        val isPasswordValid = validatePassword(password)
+
+        if (isEmailValid && isPasswordValid) {
+            onNavigateToScreen(Screen.Home)
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -52,41 +92,80 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Email") },
-                modifier = Modifier.fillMaxWidth(),
-                textStyle = MaterialTheme.typography.bodyLarge.copy(
-                    fontSize = 16.sp
-                ),
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedBorderColor = Color.LightGray,
-                    focusedBorderColor = Color(0xFF6B4EFF)
+            Column(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { newValue -> 
+                        email = newValue
+                        if (emailError != null) validateEmail(newValue)
+                    },
+                    label = { Text("Email") },
+                    modifier = Modifier.fillMaxWidth(),
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(
+                        fontSize = 16.sp
+                    ),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Email
+                    ),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        unfocusedBorderColor = if (emailError != null) Color.Red else Color.LightGray,
+                        focusedBorderColor = if (emailError != null) Color.Red else Color(0xFF6B4EFF)
+                    ),
+                    isError = emailError != null
                 )
-            )
+                if (emailError != null) {
+                    Text(
+                        text = emailError!!,
+                        color = Color.Red,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(start = 8.dp, top = 4.dp)
+                    )
+                }
+            }
 
-            OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
-                label = { Text("Password") },
-                modifier = Modifier.fillMaxWidth(),
-                textStyle = MaterialTheme.typography.bodyLarge.copy(
-                    fontSize = 16.sp
-                ),
-                visualTransformation = PasswordVisualTransformation(),
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedBorderColor = Color.LightGray,
-                    focusedBorderColor = Color(0xFF6B4EFF)
+            Column(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { newValue -> 
+                        password = newValue
+                        if (passwordError != null) validatePassword(newValue)
+                    },
+                    label = { Text("Password") },
+                    modifier = Modifier.fillMaxWidth(),
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(
+                        fontSize = 16.sp
+                    ),
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                            Text(
+                                if (passwordVisible) "Hide" else "Show",
+                                color = Color(0xFF6B4EFF)
+                            )
+                        }
+                    },
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        unfocusedBorderColor = if (passwordError != null) Color.Red else Color.LightGray,
+                        focusedBorderColor = if (passwordError != null) Color.Red else Color(0xFF6B4EFF)
+                    ),
+                    isError = passwordError != null
                 )
-            )
+                if (passwordError != null) {
+                    Text(
+                        text = passwordError!!,
+                        color = Color.Red,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(start = 8.dp, top = 4.dp)
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.height(8.dp))
 
             Button(
-                onClick = { onNavigateToScreen(Screen.Home) },
+                onClick = { validateAndLogin() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -137,12 +216,9 @@ fun LoginScreen(
             ) {
                 Text(
                     "Don't have an account? ",
-                    modifier = Modifier.padding(top = 4.dp),
                     color = Color.Gray
                 )
-                TextButton(onClick = { onNavigateToScreen(Screen.SignUp) },
-                    modifier = Modifier.padding(0.dp)
-                ) {
+                TextButton(onClick = { onNavigateToScreen(Screen.SignUp) }) {
                     Text(
                         "Sign Up",
                         color = Color(0xFF6B4EFF),

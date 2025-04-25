@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -13,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -34,6 +36,75 @@ fun SignUpScreen(
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    var confirmPasswordVisible by remember { mutableStateOf(false) }
+
+    var nameError by remember { mutableStateOf<String?>(null) }
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
+    var confirmPasswordError by remember { mutableStateOf<String?>(null) }
+
+    fun validateName(name: String): Boolean {
+        return if (name.trim().isEmpty()) {
+            nameError = "Name is required"
+            false
+        } else {
+            nameError = null
+            true
+        }
+    }
+
+    fun validateEmail(email: String): Boolean {
+        return if (email.isEmpty()) {
+            emailError = "Email is required"
+            false
+        } else if (!email.matches(Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\$"))) {
+            emailError = "Please enter a valid email"
+            false
+        } else {
+            emailError = null
+            true
+        }
+    }
+
+    fun validatePassword(password: String): Boolean {
+        return if (password.isEmpty()) {
+            passwordError = "Password is required"
+            false
+        } else if (password.length < 6) {
+            passwordError = "Password must be at least 6 characters"
+            false
+        } else {
+            passwordError = null
+            true
+        }
+    }
+
+    fun validateConfirmPassword(confirmPassword: String): Boolean {
+        return if (confirmPassword.isEmpty()) {
+            confirmPasswordError = "Confirm password is required"
+            false
+        } else if (confirmPassword.length < 6) {
+            confirmPasswordError = "Password must be at least 6 characters"
+            false
+        } else if (confirmPassword != password) {
+            confirmPasswordError = "Passwords do not match"
+            false
+        } else {
+            confirmPasswordError = null
+            true
+        }
+    }
+
+    fun validateAndSignUp() {
+        val isNameValid = validateName(name)
+        val isEmailValid = validateEmail(email)
+        val isPasswordValid = validatePassword(password)
+        val isConfirmPasswordValid = validateConfirmPassword(confirmPassword)
+
+        if (isNameValid && isEmailValid && isPasswordValid && isConfirmPasswordValid) {
+            onSignUpSuccess()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -57,76 +128,152 @@ fun SignUpScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Name field
-            OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
-                label = { Text("Full Name") },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                textStyle = MaterialTheme.typography.bodyLarge.copy(
-                    fontSize = 16.sp
-                ),
-                colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedBorderColor = Color.LightGray,
-                    focusedBorderColor = Color(0xFF6B4EFF)
+            Column(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { newValue -> 
+                        name = newValue
+                        if (nameError != null) validateName(newValue)
+                    },
+                    label = { Text("Full Name") },
+                    modifier = Modifier.fillMaxWidth(),
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(
+                        fontSize = 16.sp
+                    ),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        unfocusedBorderColor = if (nameError != null) Color.Red else Color.LightGray,
+                        focusedBorderColor = if (nameError != null) Color.Red else Color(0xFF6B4EFF)
+                    ),
+                    isError = nameError != null
                 )
-            )
+                if (nameError != null) {
+                    Text(
+                        text = nameError!!,
+                        color = Color.Red,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(start = 8.dp, top = 4.dp)
+                    )
+                }
+            }
 
             // Email field
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Email") },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                textStyle = MaterialTheme.typography.bodyLarge.copy(
-                    fontSize = 16.sp
-                ),
-                colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedBorderColor = Color.LightGray,
-                    focusedBorderColor = Color(0xFF6B4EFF)
+            Column(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { newValue -> 
+                        email = newValue
+                        if (emailError != null) validateEmail(newValue)
+                    },
+                    label = { Text("Email") },
+                    modifier = Modifier.fillMaxWidth(),
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(
+                        fontSize = 16.sp
+                    ),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Email
+                    ),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        unfocusedBorderColor = if (emailError != null) Color.Red else Color.LightGray,
+                        focusedBorderColor = if (emailError != null) Color.Red else Color(0xFF6B4EFF)
+                    ),
+                    isError = emailError != null
                 )
-            )
+                if (emailError != null) {
+                    Text(
+                        text = emailError!!,
+                        color = Color.Red,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(start = 8.dp, top = 4.dp)
+                    )
+                }
+            }
 
             // Password field
-            OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
-                label = { Text("Password") },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                textStyle = MaterialTheme.typography.bodyLarge.copy(
-                    fontSize = 16.sp
-                ),
-                colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedBorderColor = Color.LightGray,
-                    focusedBorderColor = Color(0xFF6B4EFF)
+            Column(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { newValue -> 
+                        password = newValue
+                        if (passwordError != null) validatePassword(newValue)
+                        if (confirmPassword.isNotEmpty()) validateConfirmPassword(confirmPassword)
+                    },
+                    label = { Text("Password") },
+                    modifier = Modifier.fillMaxWidth(),
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(
+                        fontSize = 16.sp
+                    ),
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                            Text(
+                                if (passwordVisible) "Hide" else "Show",
+                                color = Color(0xFF6B4EFF)
+                            )
+                        }
+                    },
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        unfocusedBorderColor = if (passwordError != null) Color.Red else Color.LightGray,
+                        focusedBorderColor = if (passwordError != null) Color.Red else Color(0xFF6B4EFF)
+                    ),
+                    isError = passwordError != null
                 )
-            )
+                if (passwordError != null) {
+                    Text(
+                        text = passwordError!!,
+                        color = Color.Red,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(start = 8.dp, top = 4.dp)
+                    )
+                }
+            }
 
             // Confirm Password field
-            OutlinedTextField(
-                value = confirmPassword,
-                onValueChange = { confirmPassword = it },
-                label = { Text("Confirm Password") },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                visualTransformation = PasswordVisualTransformation(),
-                textStyle = MaterialTheme.typography.bodyLarge.copy(
-                    fontSize = 16.sp
-                ),
-                colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedBorderColor = Color.LightGray,
-                    focusedBorderColor = Color(0xFF6B4EFF)
+            Column(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = confirmPassword,
+                    onValueChange = { newValue -> 
+                        confirmPassword = newValue
+                        if (confirmPasswordError != null) validateConfirmPassword(newValue)
+                    },
+                    label = { Text("Confirm Password") },
+                    modifier = Modifier.fillMaxWidth(),
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(
+                        fontSize = 16.sp
+                    ),
+                    visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
+                            Text(
+                                if (confirmPasswordVisible) "Hide" else "Show",
+                                color = Color(0xFF6B4EFF)
+                            )
+                        }
+                    },
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        unfocusedBorderColor = if (confirmPasswordError != null) Color.Red else Color.LightGray,
+                        focusedBorderColor = if (confirmPasswordError != null) Color.Red else Color(0xFF6B4EFF)
+                    ),
+                    isError = confirmPasswordError != null
                 )
-            )
+                if (confirmPasswordError != null) {
+                    Text(
+                        text = confirmPasswordError!!,
+                        color = Color.Red,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(start = 8.dp, top = 4.dp)
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.height(8.dp))
 
             // Sign Up Button
             Button(
-                onClick = onSignUpSuccess,
+                onClick = { validateAndSignUp() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -171,7 +318,6 @@ fun SignUpScreen(
                 )
             }
 
-            // Login prompt with better alignment
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
@@ -180,7 +326,7 @@ fun SignUpScreen(
                 Text(
                     text = "Already have an account?",
                     color = Color.Gray,
-                    modifier = Modifier.padding(top = 4.dp),
+                    modifier = Modifier.padding(top = 4.dp)
                 )
                 TextButton(
                     onClick = onNavigateToLogin,
