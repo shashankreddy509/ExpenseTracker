@@ -2,9 +2,9 @@ package com.shashank.expense.tracker.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
@@ -18,10 +18,11 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.jetbrains.compose.resources.painterResource
 import expensetracker.composeapp.generated.resources.Res
 import expensetracker.composeapp.generated.resources.ic_google
-import org.jetbrains.compose.resources.painterResource
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUpScreen(
     onNavigateBack: () -> Unit,
@@ -33,202 +34,164 @@ fun SignUpScreen(
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
-    var termsAccepted by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp)
-    ) {
-        // Top Bar with back button
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onNavigateBack) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-            }
-            Text(
-                "Sign Up",
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.Center,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-            // Empty box for alignment
-            Box(modifier = Modifier.width(48.dp))
-        }
-
-        Spacer(modifier = Modifier.height(40.dp))
-
-        // Name field
-        OutlinedTextField(
-            value = name,
-            onValueChange = { name = it },
-            label = { Text("Full Name") },
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = Color.LightGray,
-                focusedBorderColor = Color(0xFF6B4EFF)
-            )
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Email field
-        OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = Color.LightGray,
-                focusedBorderColor = Color(0xFF6B4EFF)
-            )
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Password field
-        OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
-            label = { Text("Password") },
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
-            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            trailingIcon = {
-                IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                    Text(
-                        if (passwordVisible) "Hide" else "Show",
-                        color = Color(0xFF6B4EFF)
-                    )
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Sign Up") },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
                 }
-            },
-            colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = Color.LightGray,
-                focusedBorderColor = Color(0xFF6B4EFF)
             )
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Confirm Password field
-        OutlinedTextField(
-            value = confirmPassword,
-            onValueChange = { confirmPassword = it },
-            label = { Text("Confirm Password") },
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
-            visualTransformation = PasswordVisualTransformation(),
-            colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = Color.LightGray,
-                focusedBorderColor = Color(0xFF6B4EFF)
-            )
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Terms and conditions
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .verticalScroll(rememberScrollState())
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Checkbox(
-                checked = termsAccepted,
-                onCheckedChange = { termsAccepted = it },
-                colors = CheckboxDefaults.colors(
-                    checkedColor = Color(0xFF6B4EFF)
+            // Name field
+            OutlinedTextField(
+                value = name,
+                onValueChange = { name = it },
+                label = { Text("Full Name") },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                textStyle = MaterialTheme.typography.bodyLarge.copy(
+                    fontSize = 16.sp
+                ),
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedBorderColor = Color.LightGray,
+                    focusedBorderColor = Color(0xFF6B4EFF)
                 )
             )
-            Text(
-                "By signing up, you agree to the ",
-                color = Color.Gray
-            )
-            Text(
-                "Terms of Service",
-                color = Color(0xFF6B4EFF),
-                fontWeight = FontWeight.Medium
-            )
-            Text(
-                " and ",
-                color = Color.Gray
-            )
-            Text(
-                "Privacy Policy",
-                color = Color(0xFF6B4EFF),
-                fontWeight = FontWeight.Medium
-            )
-        }
 
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Sign Up Button
-        Button(
-            onClick = onSignUpSuccess,
-            modifier = Modifier.fillMaxWidth().height(56.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF6B4EFF)
-            ),
-            shape = RoundedCornerShape(16.dp)
-        ) {
-            Text(
-                "Sign Up",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold
+            // Email field
+            OutlinedTextField(
+                value = email,
+                onValueChange = { email = it },
+                label = { Text("Email") },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                textStyle = MaterialTheme.typography.bodyLarge.copy(
+                    fontSize = 16.sp
+                ),
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedBorderColor = Color.LightGray,
+                    focusedBorderColor = Color(0xFF6B4EFF)
+                )
             )
-        }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            "Or with",
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center,
-            color = Color.Gray
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Google Sign Up Button
-        OutlinedButton(
-            onClick = { /* Handle Google sign up */ },
-            modifier = Modifier.fillMaxWidth().height(56.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = Color.Black
+            // Password field
+            OutlinedTextField(
+                value = password,
+                onValueChange = { password = it },
+                label = { Text("Password") },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                textStyle = MaterialTheme.typography.bodyLarge.copy(
+                    fontSize = 16.sp
+                ),
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedBorderColor = Color.LightGray,
+                    focusedBorderColor = Color(0xFF6B4EFF)
+                )
             )
-        ) {
-            Image(
-                painter = painterResource(Res.drawable.ic_google),
-                contentDescription = "Google logo",
-                modifier = Modifier.size(24.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                "Sign Up with Google",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium
-            )
-        }
 
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Login prompt
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Text(
-                "Already have an account? ",
-                color = Color.Gray
+            // Confirm Password field
+            OutlinedTextField(
+                value = confirmPassword,
+                onValueChange = { confirmPassword = it },
+                label = { Text("Confirm Password") },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                visualTransformation = PasswordVisualTransformation(),
+                textStyle = MaterialTheme.typography.bodyLarge.copy(
+                    fontSize = 16.sp
+                ),
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedBorderColor = Color.LightGray,
+                    focusedBorderColor = Color(0xFF6B4EFF)
+                )
             )
-            TextButton(onClick = onNavigateToLogin) {
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Sign Up Button
+            Button(
+                onClick = onSignUpSuccess,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF6B4EFF)
+                ),
+                shape = RoundedCornerShape(16.dp)
+            ) {
                 Text(
-                    "Login",
-                    color = Color(0xFF6B4EFF),
+                    "Sign Up",
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold
                 )
+            }
+
+            Text(
+                "Or with",
+                color = Color.Gray
+            )
+
+            // Google Sign Up Button
+            OutlinedButton(
+                onClick = { /* Handle Google sign up */ },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = Color.Black
+                )
+            ) {
+                Image(
+                    painter = painterResource(Res.drawable.ic_google),
+                    contentDescription = "Google logo",
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    "Sign Up with Google",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+
+            // Login prompt with better alignment
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Already have an account?",
+                    color = Color.Gray,
+                    modifier = Modifier.padding(top = 4.dp),
+                )
+                TextButton(
+                    onClick = onNavigateToLogin,
+                    modifier = Modifier.padding(0.dp)
+                ) {
+                    Text(
+                        text = "Login",
+                        color = Color(0xFF6B4EFF),
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
             }
         }
     }

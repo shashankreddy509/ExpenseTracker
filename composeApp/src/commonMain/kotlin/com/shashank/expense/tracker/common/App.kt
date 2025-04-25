@@ -15,12 +15,14 @@ import com.shashank.expense.tracker.viewmodels.HomeViewModel
 
 @Composable
 fun App() {
-    var currentScreen by remember { mutableStateOf(Screen.Onboarding) }
+    var currentScreen by remember { mutableStateOf<Screen>(Screen.Onboarding) }
+    var lastOnboardingPageShown by remember { mutableStateOf(false) }
 
     when (currentScreen) {
         Screen.Onboarding -> {
             OnboardingScreen(
                 onNavigateToScreen = { screen ->
+                    lastOnboardingPageShown = true
                     currentScreen = screen
                 }
             )
@@ -38,7 +40,7 @@ fun App() {
         Screen.SignUp -> {
             SignUpScreen(
                 onNavigateBack = {
-                    currentScreen = Screen.Login
+                    currentScreen = Screen.Onboarding
                 },
                 onNavigateToLogin = {
                     currentScreen = Screen.Login

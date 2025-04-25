@@ -27,13 +27,22 @@ import com.shashank.expense.tracker.navigation.Screen
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.DrawableResource
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun OnboardingScreen(
     onNavigateToScreen: (Screen) -> Unit
 ) {
-    val pagerState = rememberPagerState(pageCount = { 3 })
+    val pagerState = rememberPagerState(
+        initialPage = 0,
+        pageCount = { 3 }
+    )
     val scope = rememberCoroutineScope()
+
+    LaunchedEffect(pagerState.currentPage) {
+        // If we're on the last page and user swipes back, we want to stay on the last page
+        if (pagerState.currentPage == 2) {
+            pagerState.scrollToPage(2)
+        }
+    }
 
     Column(
         modifier = Modifier
