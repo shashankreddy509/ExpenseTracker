@@ -1,4 +1,4 @@
-package com.shashank.expense.tracker.screens
+package com.shashank.expense.tracker.screens.homescreen
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -12,8 +12,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -44,8 +42,6 @@ import kotlinx.datetime.*
 import org.jetbrains.compose.resources.painterResource
 import com.shashank.expense.tracker.utils.CategoryUtils
 import com.shashank.expense.tracker.utils.DateTimeUtils
-import com.shashank.expense.tracker.viewmodels.HomeViewModel
-import com.shashank.expense.tracker.viewmodels.SpendingPoint
 
 data class CategoryModel(
     val id: Long,

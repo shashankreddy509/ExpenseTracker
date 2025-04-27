@@ -4,7 +4,7 @@ import androidx.compose.ui.graphics.Color
 import expensetracker.composeapp.generated.resources.Res
 import expensetracker.composeapp.generated.resources.*
 import org.jetbrains.compose.resources.DrawableResource
-import com.shashank.expense.tracker.screens.CategoryModel
+import com.shashank.expense.tracker.screens.homescreen.CategoryModel
 
 object CategoryUtils {
     fun getCategoryIcon(category: CategoryModel): DrawableResource {

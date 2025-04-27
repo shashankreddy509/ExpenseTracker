@@ -28,9 +28,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.shashank.expense.tracker.screens.homescreen.CategoryModel
+import com.shashank.expense.tracker.screens.homescreen.ExpenseModel
+import com.shashank.expense.tracker.screens.homescreen.MonthSelector
 import com.shashank.expense.tracker.utils.CategoryUtils
 import com.shashank.expense.tracker.utils.DateTimeUtils
-import com.shashank.expense.tracker.viewmodels.HomeViewModel
+import com.shashank.expense.tracker.screens.homescreen.HomeViewModel
 import expensetracker.composeapp.generated.resources.Res
 import expensetracker.composeapp.generated.resources.ic_arrow_right
 import kotlinx.datetime.Instant

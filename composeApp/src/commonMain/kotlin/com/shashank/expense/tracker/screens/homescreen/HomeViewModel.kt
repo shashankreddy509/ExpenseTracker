@@ -1,7 +1,5 @@
-package com.shashank.expense.tracker.viewmodels
+package com.shashank.expense.tracker.screens.homescreen
 
-import com.shashank.expense.tracker.screens.CategoryModel
-import com.shashank.expense.tracker.screens.ExpenseModel
 import com.shashank.expense.tracker.data.DatabaseHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

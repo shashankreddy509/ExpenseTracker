@@ -1,4 +1,4 @@
-package com.shashank.expense.tracker.screens
+package com.shashank.expense.tracker.screens.auth
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -17,41 +17,24 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.painterResource
 import expensetracker.composeapp.generated.resources.Res
 import expensetracker.composeapp.generated.resources.ic_google
+import com.shashank.expense.tracker.navigation.Screen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SignUpScreen(
+fun LoginScreen(
     onNavigateBack: () -> Unit,
-    onNavigateToLogin: () -> Unit,
-    onSignUpSuccess: () -> Unit
+    onNavigateToScreen: (Screen) -> Unit
 ) {
-    var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
-    var confirmPasswordVisible by remember { mutableStateOf(false) }
-
-    var nameError by remember { mutableStateOf<String?>(null) }
     var emailError by remember { mutableStateOf<String?>(null) }
     var passwordError by remember { mutableStateOf<String?>(null) }
-    var confirmPasswordError by remember { mutableStateOf<String?>(null) }
-
-    fun validateName(name: String): Boolean {
-        return if (name.trim().isEmpty()) {
-            nameError = "Name is required"
-            false
-        } else {
-            nameError = null
-            true
-        }
-    }
 
     fun validateEmail(email: String): Boolean {
         return if (email.isEmpty()) {
@@ -79,37 +62,19 @@ fun SignUpScreen(
         }
     }
 
-    fun validateConfirmPassword(confirmPassword: String): Boolean {
-        return if (confirmPassword.isEmpty()) {
-            confirmPasswordError = "Confirm password is required"
-            false
-        } else if (confirmPassword.length < 6) {
-            confirmPasswordError = "Password must be at least 6 characters"
-            false
-        } else if (confirmPassword != password) {
-            confirmPasswordError = "Passwords do not match"
-            false
-        } else {
-            confirmPasswordError = null
-            true
-        }
-    }
-
-    fun validateAndSignUp() {
-        val isNameValid = validateName(name)
+    fun validateAndLogin() {
         val isEmailValid = validateEmail(email)
         val isPasswordValid = validatePassword(password)
-        val isConfirmPasswordValid = validateConfirmPassword(confirmPassword)
 
-        if (isNameValid && isEmailValid && isPasswordValid && isConfirmPasswordValid) {
-            onSignUpSuccess()
+        if (isEmailValid && isPasswordValid) {
+            onNavigateToScreen(Screen.Home)
         }
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Sign Up") },
+                title = { Text("Login") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
@@ -127,37 +92,6 @@ fun SignUpScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Name field
-            Column(modifier = Modifier.fillMaxWidth()) {
-                OutlinedTextField(
-                    value = name,
-                    onValueChange = { newValue -> 
-                        name = newValue
-                        if (nameError != null) validateName(newValue)
-                    },
-                    label = { Text("Full Name") },
-                    modifier = Modifier.fillMaxWidth(),
-                    textStyle = MaterialTheme.typography.bodyLarge.copy(
-                        fontSize = 16.sp
-                    ),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedBorderColor = if (nameError != null) Color.Red else Color.LightGray,
-                        focusedBorderColor = if (nameError != null) Color.Red else Color(0xFF6B4EFF)
-                    ),
-                    isError = nameError != null
-                )
-                if (nameError != null) {
-                    Text(
-                        text = nameError!!,
-                        color = Color.Red,
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(start = 8.dp, top = 4.dp)
-                    )
-                }
-            }
-
-            // Email field
             Column(modifier = Modifier.fillMaxWidth()) {
                 OutlinedTextField(
                     value = email,
@@ -190,14 +124,12 @@ fun SignUpScreen(
                 }
             }
 
-            // Password field
             Column(modifier = Modifier.fillMaxWidth()) {
                 OutlinedTextField(
                     value = password,
                     onValueChange = { newValue -> 
                         password = newValue
                         if (passwordError != null) validatePassword(newValue)
-                        if (confirmPassword.isNotEmpty()) validateConfirmPassword(confirmPassword)
                     },
                     label = { Text("Password") },
                     modifier = Modifier.fillMaxWidth(),
@@ -230,50 +162,10 @@ fun SignUpScreen(
                 }
             }
 
-            // Confirm Password field
-            Column(modifier = Modifier.fillMaxWidth()) {
-                OutlinedTextField(
-                    value = confirmPassword,
-                    onValueChange = { newValue -> 
-                        confirmPassword = newValue
-                        if (confirmPasswordError != null) validateConfirmPassword(newValue)
-                    },
-                    label = { Text("Confirm Password") },
-                    modifier = Modifier.fillMaxWidth(),
-                    textStyle = MaterialTheme.typography.bodyLarge.copy(
-                        fontSize = 16.sp
-                    ),
-                    visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                    trailingIcon = {
-                        IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
-                            Text(
-                                if (confirmPasswordVisible) "Hide" else "Show",
-                                color = Color(0xFF6B4EFF)
-                            )
-                        }
-                    },
-                    shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedBorderColor = if (confirmPasswordError != null) Color.Red else Color.LightGray,
-                        focusedBorderColor = if (confirmPasswordError != null) Color.Red else Color(0xFF6B4EFF)
-                    ),
-                    isError = confirmPasswordError != null
-                )
-                if (confirmPasswordError != null) {
-                    Text(
-                        text = confirmPasswordError!!,
-                        color = Color.Red,
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(start = 8.dp, top = 4.dp)
-                    )
-                }
-            }
-
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Sign Up Button
             Button(
-                onClick = { validateAndSignUp() },
+                onClick = { validateAndLogin() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -283,7 +175,7 @@ fun SignUpScreen(
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Text(
-                    "Sign Up",
+                    "Login",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -294,9 +186,8 @@ fun SignUpScreen(
                 color = Color.Gray
             )
 
-            // Google Sign Up Button
             OutlinedButton(
-                onClick = { /* Handle Google sign up */ },
+                onClick = { /* Handle Google login */ },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -312,7 +203,7 @@ fun SignUpScreen(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    "Sign Up with Google",
+                    "Login with Google",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium
                 )
@@ -324,16 +215,12 @@ fun SignUpScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Already have an account?",
-                    color = Color.Gray,
-                    modifier = Modifier.padding(top = 4.dp)
+                    "Don't have an account? ",
+                    color = Color.Gray
                 )
-                TextButton(
-                    onClick = onNavigateToLogin,
-                    modifier = Modifier.padding(0.dp)
-                ) {
+                TextButton(onClick = { onNavigateToScreen(Screen.SignUp) }) {
                     Text(
-                        text = "Login",
+                        "Sign Up",
                         color = Color(0xFF6B4EFF),
                         fontWeight = FontWeight.SemiBold
                     )
@@ -341,4 +228,4 @@ fun SignUpScreen(
             }
         }
     }
-} 
+}

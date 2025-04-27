@@ -6,12 +6,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.shashank.expense.tracker.navigation.Screen
-import com.shashank.expense.tracker.screens.HomeScreen
-import com.shashank.expense.tracker.screens.LoginScreen
-import com.shashank.expense.tracker.screens.OnboardingScreen
-import com.shashank.expense.tracker.screens.SignUpScreen
+import com.shashank.expense.tracker.screens.homescreen.HomeScreen
+import com.shashank.expense.tracker.screens.auth.LoginScreen
+import com.shashank.expense.tracker.screens.onboarding.OnboardingScreen
+import com.shashank.expense.tracker.screens.auth.SignUpScreen
 import org.koin.compose.koinInject
-import com.shashank.expense.tracker.viewmodels.HomeViewModel
+import com.shashank.expense.tracker.screens.homescreen.HomeViewModel
 
 @Composable
 fun App() {
