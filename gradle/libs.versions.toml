@@ -1,29 +1,29 @@
 [versions]
-activityCompose = "1.8.2"
 agp = "8.5.2"
 android-compileSdk = "34"
 android-minSdk = "24"
 android-targetSdk = "34"
-androidx-activityCompose = "1.10.1"
+androidDriver = "2.0.1"
+androidx-activityCompose = "1.9.3"
 androidx-appcompat = "1.7.0"
-androidx-constraintlayout = "2.2.1"
-androidx-core-ktx = "1.16.0"
+androidx-constraintlayout = "2.1.4"
+androidx-core-ktx = "1.13.1"
 androidx-espresso-core = "3.6.1"
-androidx-lifecycle = "2.8.4"
+androidx-lifecycle = "2.8.3"
 androidx-material = "1.12.0"
 androidx-test-junit = "1.2.1"
-compose-multiplatform = "1.7.3"
+compose-multiplatform = "1.7.0"
 junit = "4.13.2"
-kotlin = "2.1.10"
-kotlinxDatetime = "0.6.0"
+kmpDateTimePicker = "1.0.6"
+koinAndroid = "3.5.0"
+kotlin = "2.0.20"
 
 #navigaion and Room
 navigation = "2.7.0-alpha07"
 landscapist = "2.4.0"
-room = "2.7.0"
+room = "2.7.0-alpha08"
 ksp = "2.0.20-1.0.25"
-runtime = "2.0.1"
-sqlite = "2.5.0"
+sqlite = "2.5.0-alpha08"
 koin = "4.0.0"
 #voyager
 voyager = "1.0.0"
@@ -33,19 +33,21 @@ gservices = "4.4.2"
 firebaseAuth = "2.1.0"
 
 stately-common="2.1.0"
+kotlinxDatetime = "0.6.0"
 
 [libraries]
 #navigation and Room
-android-driver = { module = "app.cash.sqldelight:android-driver", version.ref = "runtime" }
-androidx-activity-compose-v182 = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
+android-driver = { module = "app.cash.sqldelight:android-driver", version.ref = "androidDriver" }
 compose-navigation = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigation" }
-coroutines-extensions = { module = "app.cash.sqldelight:coroutines-extensions", version.ref = "runtime" }
+coroutines-extensions = { module = "app.cash.sqldelight:coroutines-extensions", version.ref = "androidDriver" }
+kmp-date-time-picker = { module = "network.chaintech:kmp-date-time-picker", version.ref = "kmpDateTimePicker" }
+koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koinAndroid" }
 landscapist-coil3 = { module = "com.github.skydoves:landscapist-coil3", version.ref = "landscapist" }
-native-driver = { module = "app.cash.sqldelight:native-driver", version.ref = "runtime" }
-primitive-adapters = { module = "app.cash.sqldelight:primitive-adapters", version.ref = "runtime" }
+native-driver = { module = "app.cash.sqldelight:native-driver", version.ref = "androidDriver" }
+primitive-adapters = { module = "app.cash.sqldelight:primitive-adapters", version.ref = "androidDriver" }
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
-runtime = { module = "app.cash.sqldelight:runtime", version.ref = "runtime" }
+runtime = { module = "app.cash.sqldelight:runtime", version.ref = "androidDriver" }
 sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
@@ -62,6 +64,7 @@ navigator-koin = { module = "cafe.adriel.voyager:voyager-koin", version.ref = "v
 firebase-auth = { module = "dev.gitlive:firebase-auth", version.ref = "firebaseAuth" }
 firebase-firestore = { module = "dev.gitlive:firebase-firestore", version.ref = "firebaseAuth"  }
 
+sqlite-driver = { module = "app.cash.sqldelight:sqlite-driver", version.ref = "androidDriver" }
 stately-common = { module = "co.touchlab:stately-common", version.ref = "stately-common" }
 
 #Date-time

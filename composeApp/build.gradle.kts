@@ -49,35 +49,59 @@ kotlin {
                 implementation(libs.androidx.lifecycle.viewmodel)
                 implementation(libs.androidx.lifecycle.runtime.compose)
 
+                //Navigation, Room and koin DI
+                implementation(libs.compose.navigation)
+                implementation(libs.landscapist.coil3)
+                implementation(libs.room.runtime)
+                implementation(libs.sqlite.bundled)
+                implementation(libs.koin.core)
+                implementation(libs.koin.compose)
+                implementation(libs.koin.compose.viewmodel)
+
+                //Voyager
+                implementation(libs.navigator)
+                implementation(libs.navigator.screen.model)
+                implementation(libs.navigator.transitions)
+                implementation(libs.navigator.koin)
+
+                //Firebase
+                implementation(libs.firebase.auth)
+                implementation(libs.firebase.firestore)
+                implementation(libs.stately.common)
+
+                //DateTime
+                implementation(libs.kotlinx.datetime)
+
+                //Image
+                implementation(libs.landscapist.coil3)
+
+                //DatePicker
+                implementation(libs.kmp.date.time.picker)
+
                 // SQLDelight
-                implementation("app.cash.sqldelight:runtime:2.0.1")
-                implementation("app.cash.sqldelight:coroutines-extensions:2.0.1")
-                implementation("app.cash.sqldelight:primitive-adapters:2.0.1")
-                
-                // DateTime
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
-                implementation("io.insert-koin:koin-core:3.5.0")
-                implementation("io.insert-koin:koin-compose:1.1.0")
+                implementation(libs.runtime)
+                implementation(libs.coroutines.extensions)
+                implementation(libs.primitive.adapters)
             }
         }
 
         val androidMain by getting {
             dependencies {
                 implementation(compose.preview)
-                implementation("androidx.activity:activity-compose:1.8.2")
+                implementation(libs.androidx.activity.compose)
                 implementation(libs.koin.android)
-                
+
                 // SQLDelight Android driver
-                implementation("app.cash.sqldelight:android-driver:2.0.1")
-                implementation("io.insert-koin:koin-android:3.5.0")
-                implementation("io.insert-koin:koin-androidx-compose:3.5.0")
+                implementation(libs.android.driver)
+                implementation(libs.koin.android)
+                implementation(libs.koin.androidx.compose)
             }
         }
 
         val iosMain by creating {
             dependencies {
                 // SQLDelight iOS driver
-                implementation("app.cash.sqldelight:native-driver:2.0.1")
+                implementation(libs.native.driver)
             }
         }
 
@@ -85,7 +109,7 @@ kotlin {
             dependencies {
                 implementation(compose.desktop.currentOs)
                 // SQLDelight JVM driver
-                implementation("app.cash.sqldelight:sqlite-driver:2.0.1")
+                implementation(libs.sqlite.driver)
             }
         }
     }
