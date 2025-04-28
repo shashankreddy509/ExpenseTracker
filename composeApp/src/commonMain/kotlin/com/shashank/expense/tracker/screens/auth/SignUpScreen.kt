@@ -22,10 +22,13 @@ import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.painterResource
 import expensetracker.composeapp.generated.resources.Res
 import expensetracker.composeapp.generated.resources.ic_google
+import com.shashank.expense.tracker.auth.AuthViewModel
+import com.shashank.expense.tracker.auth.AuthState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUpScreen(
+    viewModel: AuthViewModel,
     onNavigateBack: () -> Unit,
     onNavigateToLogin: () -> Unit,
     onSignUpSuccess: () -> Unit
@@ -41,6 +44,29 @@ fun SignUpScreen(
     var emailError by remember { mutableStateOf<String?>(null) }
     var passwordError by remember { mutableStateOf<String?>(null) }
     var confirmPasswordError by remember { mutableStateOf<String?>(null) }
+    var isLoading by remember { mutableStateOf(false) }
+    var authError by remember { mutableStateOf<String?>(null) }
+
+    // Observe auth state changes
+    LaunchedEffect(viewModel.authState) {
+        viewModel.authState.collect { state ->
+            when (state) {
+                is AuthState.Loading -> {
+                    isLoading = true
+                    authError = null
+                }
+                is AuthState.Authenticated -> {
+                    isLoading = false
+                    onSignUpSuccess()
+                }
+                is AuthState.Error -> {
+                    isLoading = false
+                    authError = state.message
+                }
+                else -> {}
+            }
+        }
+    }
 
     fun validateName(name: String): Boolean {
         return if (name.trim().isEmpty()) {
@@ -101,7 +127,7 @@ fun SignUpScreen(
         val isConfirmPasswordValid = validateConfirmPassword(confirmPassword)
 
         if (isNameValid && isEmailValid && isPasswordValid && isConfirmPasswordValid) {
-            onSignUpSuccess()
+            viewModel.signUp(email, password)
         }
     }
 
@@ -268,9 +294,17 @@ fun SignUpScreen(
                 }
             }
 
+            authError?.let {
+                Text(
+                    text = it,
+                    color = Color.Red,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
+
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Sign Up Button
             Button(
                 onClick = { validateAndSignUp() },
                 modifier = Modifier
@@ -279,13 +313,21 @@ fun SignUpScreen(
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF6B4EFF)
                 ),
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(16.dp),
+                enabled = !isLoading
             ) {
-                Text(
-                    "Sign Up",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                } else {
+                    Text(
+                        "Sign Up",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
             }
 
             Text(
@@ -293,7 +335,6 @@ fun SignUpScreen(
                 color = Color.Gray
             )
 
-            // Google Sign Up Button
             OutlinedButton(
                 onClick = { /* Handle Google sign up */ },
                 modifier = Modifier
@@ -311,7 +352,7 @@ fun SignUpScreen(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    "Sign Up with Google",
+                    "Sign up with Google",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium
                 )
@@ -323,16 +364,12 @@ fun SignUpScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Already have an account?",
-                    color = Color.Gray,
-                    modifier = Modifier.padding(top = 4.dp)
+                    "Already have an account? ",
+                    color = Color.Gray
                 )
-                TextButton(
-                    onClick = onNavigateToLogin,
-                    modifier = Modifier.padding(0.dp)
-                ) {
+                TextButton(onClick = onNavigateToLogin) {
                     Text(
-                        text = "Login",
+                        "Login",
                         color = Color(0xFF6B4EFF),
                         fontWeight = FontWeight.SemiBold
                     )

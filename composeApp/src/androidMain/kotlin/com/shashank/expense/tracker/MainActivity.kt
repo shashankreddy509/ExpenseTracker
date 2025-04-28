@@ -8,19 +8,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.shashank.expense.tracker.common.App
-import com.shashank.expense.tracker.di.initKoin
-import com.shashank.expense.tracker.di.createAndroidModule
-import org.koin.android.ext.koin.androidContext
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
-        initKoin {
-            androidContext(this@MainActivity)
-            modules(createAndroidModule(this@MainActivity))
-        }
-        
+
         setContent {
             MaterialTheme {
                 Surface(

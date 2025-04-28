@@ -7,13 +7,11 @@ import kotlinx.cinterop.CValue
 import platform.CoreGraphics.CGRect
 import platform.CoreGraphics.CGRectGetWidth
 import platform.CoreGraphics.CGRectGetHeight
-import com.shashank.expense.tracker.di.initKoin
+import com.shashank.expense.tracker.di.initializeKoin
 
 @OptIn(ExperimentalForeignApi::class)
 fun MainViewController(): UIViewController {
-    // Initialize Koin
-    initKoin()
-    
+
     val splashViewController = UIViewController()
     
     // Create and configure the main container view
@@ -67,7 +65,11 @@ fun MainViewController(): UIViewController {
         2.0, // 2 second delay
         false,
         {
-            val composeController = ComposeUIViewController { App() }
+            val composeController = ComposeUIViewController(
+                configure = {
+                    initializeKoin()
+                }
+            ) { App() }
             splashViewController.presentViewController(
                 composeController,
                 true,

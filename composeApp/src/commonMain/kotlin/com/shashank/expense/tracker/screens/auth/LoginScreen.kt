@@ -23,10 +23,13 @@ import org.jetbrains.compose.resources.painterResource
 import expensetracker.composeapp.generated.resources.Res
 import expensetracker.composeapp.generated.resources.ic_google
 import com.shashank.expense.tracker.navigation.Screen
+import com.shashank.expense.tracker.auth.AuthViewModel
+import com.shashank.expense.tracker.auth.AuthState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
+    viewModel: AuthViewModel,
     onNavigateBack: () -> Unit,
     onNavigateToScreen: (Screen) -> Unit
 ) {
@@ -35,6 +38,29 @@ fun LoginScreen(
     var passwordVisible by remember { mutableStateOf(false) }
     var emailError by remember { mutableStateOf<String?>(null) }
     var passwordError by remember { mutableStateOf<String?>(null) }
+    var isLoading by remember { mutableStateOf(false) }
+    var authError by remember { mutableStateOf<String?>(null) }
+
+    // Observe auth state changes
+    LaunchedEffect(viewModel.authState) {
+        viewModel.authState.collect { state ->
+            when (state) {
+                is AuthState.Loading -> {
+                    isLoading = true
+                    authError = null
+                }
+                is AuthState.Authenticated -> {
+                    isLoading = false
+                    onNavigateToScreen(Screen.Home)
+                }
+                is AuthState.Error -> {
+                    isLoading = false
+                    authError = state.message
+                }
+                else -> {}
+            }
+        }
+    }
 
     fun validateEmail(email: String): Boolean {
         return if (email.isEmpty()) {
@@ -67,7 +93,7 @@ fun LoginScreen(
         val isPasswordValid = validatePassword(password)
 
         if (isEmailValid && isPasswordValid) {
-            onNavigateToScreen(Screen.Home)
+            viewModel.signIn(email, password)
         }
     }
 
@@ -162,6 +188,15 @@ fun LoginScreen(
                 }
             }
 
+            authError?.let {
+                Text(
+                    text = it,
+                    color = Color.Red,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
+
             Spacer(modifier = Modifier.height(8.dp))
 
             Button(
@@ -172,13 +207,21 @@ fun LoginScreen(
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF6B4EFF)
                 ),
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(16.dp),
+                enabled = !isLoading
             ) {
-                Text(
-                    "Login",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                } else {
+                    Text(
+                        "Login",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
             }
 
             Text(

@@ -1,10 +1,13 @@
 package com.shashank.expense.tracker.common
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.shashank.expense.tracker.auth.AuthState
+import com.shashank.expense.tracker.auth.AuthViewModel
 import com.shashank.expense.tracker.navigation.Screen
 import com.shashank.expense.tracker.screens.homescreen.HomeScreen
 import com.shashank.expense.tracker.screens.auth.LoginScreen
@@ -15,8 +18,27 @@ import com.shashank.expense.tracker.screens.homescreen.HomeViewModel
 
 @Composable
 fun App() {
+    // Initialize Koin only once
     var currentScreen by remember { mutableStateOf<Screen>(Screen.Onboarding) }
     var lastOnboardingPageShown by remember { mutableStateOf(false) }
+    val authViewModel = koinInject<AuthViewModel>()
+
+    // Observe auth state changes
+    LaunchedEffect(authViewModel) {
+        authViewModel.authState.collect { state ->
+            when (state) {
+                is AuthState.Authenticated -> {
+                    currentScreen = Screen.Home
+                }
+                is AuthState.Unauthenticated -> {
+                    if (lastOnboardingPageShown) {
+                        currentScreen = Screen.Login
+                    }
+                }
+                else -> {}
+            }
+        }
+    }
 
     when (currentScreen) {
         Screen.Onboarding -> {
@@ -29,6 +51,7 @@ fun App() {
         }
         Screen.Login -> {
             LoginScreen(
+                viewModel = authViewModel,
                 onNavigateBack = {
                     currentScreen = Screen.Onboarding
                 },
@@ -39,6 +62,7 @@ fun App() {
         }
         Screen.SignUp -> {
             SignUpScreen(
+                viewModel = authViewModel,
                 onNavigateBack = {
                     currentScreen = Screen.Onboarding
                 },
