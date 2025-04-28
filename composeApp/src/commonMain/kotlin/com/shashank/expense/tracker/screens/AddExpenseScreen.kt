@@ -1,49 +1,19 @@
-package screens
+package com.shashank.expense.tracker.screens
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.shashank.expense.tracker.screens.homescreen.CategoryModel
-import com.shashank.expense.tracker.utils.CategoryUtils
+import com.shashank.expense.tracker.models.CategoryModel
+import com.shashank.expense.tracker.models.ExpenseModel
 import com.shashank.expense.tracker.screens.homescreen.HomeViewModel
-import expensetracker.composeapp.generated.resources.Res
-import expensetracker.composeapp.generated.resources.ic_arrow_left
-import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.painterResource
+import com.shashank.expense.tracker.utils.DateTimeUtils
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.toInstant
 
 @Composable
 fun AddExpenseScreen(
@@ -54,20 +24,19 @@ fun AddExpenseScreen(
     var amount by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf<CategoryModel?>(null) }
     var isIncome by remember { mutableStateOf(false) }
+    
     val categories by viewModel.categories.collectAsState()
-    val scope = rememberCoroutineScope()
-
-    LaunchedEffect(Unit) {
-        viewModel.loadCategories()
-    }
-
+    
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        TopBar(onNavigateBack = onNavigateBack)
-        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = "Add Expense",
+            style = MaterialTheme.typography.headlineMedium
+        )
         
         OutlinedTextField(
             value = title,
@@ -76,8 +45,6 @@ fun AddExpenseScreen(
             modifier = Modifier.fillMaxWidth()
         )
         
-        Spacer(modifier = Modifier.height(16.dp))
-        
         OutlinedTextField(
             value = amount,
             onValueChange = { amount = it },
@@ -85,115 +52,71 @@ fun AddExpenseScreen(
             modifier = Modifier.fillMaxWidth()
         )
         
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        CategorySelector(
-            categories = categories,
-            selectedCategory = selectedCategory,
-            onCategorySelected = { selectedCategory = it }
-        )
-        
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("Type")
-            Switch(
-                checked = isIncome,
-                onCheckedChange = { isIncome = it }
-            )
-            Text(if (isIncome) "Income" else "Expense")
+        // Category Selection
+        categories.forEach { category ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                RadioButton(
+                    selected = selectedCategory?.id == category.id,
+                    onClick = { selectedCategory = category }
+                )
+                Text(
+                    text = category.title,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
         }
         
-        Spacer(modifier = Modifier.weight(1f))
+        // Income/Expense Toggle
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            RadioButton(
+                selected = isIncome,
+                onClick = { isIncome = true }
+            )
+            Text(
+                text = "Income",
+                modifier = Modifier.padding(start = 8.dp)
+            )
+            
+            Spacer(modifier = Modifier.width(16.dp))
+            
+            RadioButton(
+                selected = !isIncome,
+                onClick = { isIncome = false }
+            )
+            Text(
+                text = "Expense",
+                modifier = Modifier.padding(start = 8.dp)
+            )
+        }
         
         Button(
             onClick = {
                 if (title.isNotBlank() && amount.isNotBlank() && selectedCategory != null) {
-                    scope.launch {
-                        viewModel.addExpense(
-                            title = title,
-                            amount = amount.toDoubleOrNull() ?: 0.0,
-                            category = selectedCategory!!.title,
-                            isIncome = isIncome
-                        )
-                        onNavigateBack()
-                    }
+                    val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+                    val timestamp = now.toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds()
+                    val expense = ExpenseModel(
+                        id = 0,
+                        title = title,
+                        amount = amount.toDoubleOrNull() ?: 0.0,
+                        category = selectedCategory!!.title,
+                        type = if (isIncome) "income" else "expense",
+                        tax = 0.0,
+                        date = timestamp,
+                        createdAt = timestamp
+                    )
+                    viewModel.addExpense(expense)
+                    onNavigateBack()
                 }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Add Transaction")
-        }
-    }
-}
-
-@Composable
-private fun TopBar(onNavigateBack: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        IconButton(onClick = onNavigateBack) {
-            Icon(
-                painter = painterResource(Res.drawable.ic_arrow_left),
-                contentDescription = "Back",
-                tint = Color(0xFF212224)
-            )
-        }
-        Text(
-            text = "Add Transaction",
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(start = 16.dp)
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun CategorySelector(
-    categories: List<CategoryModel>,
-    selectedCategory: CategoryModel?,
-    onCategorySelected: (CategoryModel) -> Unit
-) {
-    LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        contentPadding = PaddingValues(horizontal = 16.dp)
-    ) {
-        items(categories) { category ->
-            FilterChip(
-                selected = category == selectedCategory,
-                onClick = { onCategorySelected(category) },
-                label = { Text(category.title) },
-                leadingIcon = {
-                    Box(
-                        modifier = Modifier
-                            .size(32.dp)
-                            .background(
-                                color = Color(0x14000000),
-                                shape = RoundedCornerShape(8.dp)
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            painter = painterResource(CategoryUtils.getCategoryIcon(category)),
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp),
-                            tint = CategoryUtils.getCategoryColor(category)
-                        )
-                    }
-                },
-                colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = Color(0xFF7F3DFF),
-                    selectedLabelColor = Color.White,
-                    selectedLeadingIconColor = Color.White
-                )
-            )
+            Text("Add")
         }
     }
 } 

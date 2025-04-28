@@ -9,6 +9,7 @@ import com.shashank.expense.tracker.database.provideSqlDriver
 import com.shashank.expense.tracker.screens.homescreen.HomeViewModel
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.auth
+import dev.gitlive.firebase.firestore.firestore
 import org.koin.core.KoinApplication
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
@@ -16,11 +17,11 @@ import org.koin.dsl.module
 val commonModule = module {
     single<SqlDriver> { provideSqlDriver() }
     single<DatabaseHelper> { DatabaseHelper(get()) }
-    single<HomeViewModel> { HomeViewModel(get()) }
     single { Firebase.auth }
+    single { Firebase.firestore }
     single<AuthRepository> { FirebaseAuthRepository(get()) }
     single { AuthViewModel(get()) }
-
+    single { HomeViewModel() }
 }
 
 fun initializeKoin(

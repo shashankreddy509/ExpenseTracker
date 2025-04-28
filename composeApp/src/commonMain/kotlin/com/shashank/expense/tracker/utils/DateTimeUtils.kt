@@ -34,6 +34,16 @@ object DateTimeUtils {
         return "${date.month.name.lowercase().capitalize()} ${date.dayOfMonth}, ${date.year}"
     }
 
+    fun formatTime(timestamp: Long): String {
+        return try {
+            val dateTime = Instant.fromEpochMilliseconds(timestamp)
+                .toLocalDateTime(systemTimeZone)
+            formatTime(dateTime)
+        } catch (e: Exception) {
+            "Invalid time"
+        }
+    }
+
     fun formatTime(dateTime: LocalDateTime): String {
         val hour = if (dateTime.hour > 12) dateTime.hour - 12 else dateTime.hour
         val amPm = if (dateTime.hour >= 12) "PM" else "AM"

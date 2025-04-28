@@ -34,6 +34,25 @@ FROM Expense
 WHERE category = :category
 ORDER BY date DESC;
 
+searchExpenses:
+SELECT *
+FROM Expense
+WHERE title LIKE :query
+   OR category LIKE :query
+ORDER BY date DESC;
+
+filterExpensesByDateRange:
+SELECT *
+FROM Expense
+WHERE date BETWEEN :startDate AND :endDate
+ORDER BY date DESC;
+
+filterExpensesByType:
+SELECT *
+FROM Expense
+WHERE type = :type
+ORDER BY date DESC;
+
 insertExpense:
 INSERT INTO Expense(title, amount, category, type, tax, date)
 VALUES (?, ?, ?, ?, ?, ?);

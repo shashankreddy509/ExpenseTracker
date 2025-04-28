@@ -38,6 +38,14 @@ class AuthViewModel(private val authRepository: AuthRepository) : ScreenModel {
         }
     }
 
+    fun signInWithGoogle(idToken: String) {
+        screenModelScope.launch {
+            authRepository.signInWithGoogle(idToken).collect { state ->
+                _authState.value = state
+            }
+        }
+    }
+
     fun signOut() {
         screenModelScope.launch {
             authRepository.signOut()

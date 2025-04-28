@@ -1,12 +1,16 @@
 package com.shashank.expense.tracker.screens.homescreen
 
 import com.shashank.expense.tracker.data.DatabaseHelper
+import com.shashank.expense.tracker.models.CategoryModel
+import com.shashank.expense.tracker.models.ExpenseModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.datetime.*
 import com.shashank.expense.tracker.utils.DateTimeUtils
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
 data class SpendingPoint(
     val value: Float,
@@ -14,10 +18,10 @@ data class SpendingPoint(
     val timestamp: LocalDateTime
 )
 
-class HomeViewModel(
-    private val databaseHelper: DatabaseHelper,
-    private val scope: CoroutineScope = CoroutineScope(Dispatchers.Main)
-) {
+class HomeViewModel : KoinComponent {
+    private val databaseHelper: DatabaseHelper by inject()
+    private val scope = CoroutineScope(Dispatchers.Main)
+
     private val _expenses = MutableStateFlow<List<ExpenseModel>>(emptyList())
     val expenses: StateFlow<List<ExpenseModel>> = _expenses.asStateFlow()
 
@@ -36,30 +40,67 @@ class HomeViewModel(
     private val _totalExpenses = MutableStateFlow(0.0)
     val totalExpenses: StateFlow<Double> = _totalExpenses.asStateFlow()
 
-    private val _selectedTimeFrame = MutableStateFlow("Week")
-    val selectedTimeFrame: StateFlow<String> = _selectedTimeFrame
+    private val _selectedTimeFrame = MutableStateFlow("Month")
+    val selectedTimeFrame: StateFlow<String> = _selectedTimeFrame.asStateFlow()
 
     private val _spendingData = MutableStateFlow<List<SpendingPoint>>(emptyList())
-    val spendingData: StateFlow<List<SpendingPoint>> = _spendingData
+    val spendingData: StateFlow<List<SpendingPoint>> = _spendingData.asStateFlow()
 
     private val _selectedMonth = MutableStateFlow(Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).month)
-    val selectedMonth: StateFlow<Month> = _selectedMonth
+    val selectedMonth: StateFlow<Month> = _selectedMonth.asStateFlow()
 
     private val _filteredExpenses = MutableStateFlow<List<ExpenseModel>>(emptyList())
-    val filteredExpenses: StateFlow<List<ExpenseModel>> = _filteredExpenses
+    val filteredExpenses: StateFlow<List<ExpenseModel>> = _filteredExpenses.asStateFlow()
 
     private val _dateError = MutableStateFlow<String?>(null)
-    val dateError: StateFlow<String?> = _dateError
+    val dateError: StateFlow<String?> = _dateError.asStateFlow()
+
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+
+    private val _selectedCategory = MutableStateFlow<String?>(null)
+    val selectedCategory: StateFlow<String?> = _selectedCategory.asStateFlow()
+
+    private val _selectedType = MutableStateFlow<String?>(null)
+    val selectedType: StateFlow<String?> = _selectedType.asStateFlow()
+
+    private val _dateRange = MutableStateFlow<Pair<Long, Long>?>(null)
+    val dateRange: StateFlow<Pair<Long, Long>?> = _dateRange.asStateFlow()
 
     init {
         loadData()
+        scope.launch {
+            // Watch for search and filter changes
+            combine(
+                searchQuery,
+                selectedCategory,
+                selectedType,
+                dateRange,
+                expenses
+            ) { query, category, type, range, allExpenses ->
+                when {
+                    !query.isBlank() -> databaseHelper.searchExpenses(query)
+                    category != null -> databaseHelper.filterExpensesByCategory(category)
+                    type != null -> databaseHelper.filterExpensesByType(type)
+                    range != null -> databaseHelper.filterExpensesByDateRange(range.first, range.second)
+                    else -> flow { emit(allExpenses) }
+                }
+            }.collect { filteredFlow ->
+                filteredFlow.collect { filtered ->
+                    _filteredExpenses.value = filtered
+                    updateBalances(filtered)
+                    updateSpendingData()
+                }
+            }
+        }
+
         scope.launch {
             // Watch for month changes to update filtered expenses
             combine(expenses, selectedMonth) { expensesList, month ->
                 val (startTime, endTime) = DateTimeUtils.getMonthStartEnd(month)
                 expensesList.filter {
                     try {
-                        val timestamp = it.date.toLong()
+                        val timestamp = it.date
                         timestamp in startTime..endTime
                     } catch (e: Exception) {
                         false
@@ -77,39 +118,18 @@ class HomeViewModel(
         scope.launch {
             // Collect expenses
             databaseHelper.getAllExpenses().collect { dbExpenses ->
-                _expenses.value = dbExpenses.map { expense ->
-                    ExpenseModel(
-                        id = expense.id,
-                        title = expense.title,
-                        amount = expense.amount,
-                        category = expense.category,
-                        isIncome = expense.type == "income",
-                        date = expense.date
-                    )
-                }
+                _expenses.value = dbExpenses
                 updateBalances()
             }
 
             // Collect categories
             databaseHelper.getAllCategories().collect { dbCategories ->
-                _categories.value = dbCategories.map { category ->
-                    CategoryModel(
-                        id = category.id,
-                        title = category.name,
-                        isFavorite = category.isFavorite
-                    )
-                }
+                _categories.value = dbCategories
             }
 
             // Collect favorite categories
             databaseHelper.getFavoriteCategories().collect { dbCategories ->
-                _favoriteCategories.value = dbCategories.map { category ->
-                    CategoryModel(
-                        id = category.id,
-                        title = category.name,
-                        isFavorite = category.isFavorite
-                    )
-                }
+                _favoriteCategories.value = dbCategories
             }
         }
     }
@@ -126,63 +146,28 @@ class HomeViewModel(
         }
     }
 
-    fun addExpense(
-        title: String,
-        amount: Double,
-        category: String,
-        isIncome: Boolean,
-        timestamp: Long = DateTimeUtils.getCurrentDateTime()
-            .toInstant(TimeZone.currentSystemDefault())
-            .toEpochMilliseconds()
-    ) {
-        if (!validateExpense(title, amount, category, timestamp)) {
-            return
-        }
-
+    fun addExpense(expense: ExpenseModel) {
         scope.launch {
             databaseHelper.insertExpense(
-                title = title,
-                amount = amount,
-                category = category,
-                type = if (isIncome) "income" else "expense",
-                tax = 0.0,
-                date = timestamp
+                title = expense.title,
+                amount = expense.amount,
+                category = expense.category,
+                type = expense.type,
+                tax = expense.tax,
+                date = expense.date
             )
-            _dateError.value = null
         }
     }
 
-    private fun validateExpense(
-        title: String,
-        amount: Double,
-        category: String,
-        timestamp: Long
-    ): Boolean {
-        if (title.isBlank()) {
-            return false
+    fun updateExpense(expense: ExpenseModel) {
+        scope.launch {
+            // TODO: Implement update expense
         }
-        if (amount <= 0) {
-            return false
-        }
-        if (category.isBlank()) {
-            return false
-        }
-        if (!DateTimeUtils.isValidDate(timestamp)) {
-            _dateError.value = "Invalid date or date is in future"
-            return false
-        }
-        return true
     }
 
-    suspend fun loadCategories() {
-        databaseHelper.getAllCategories().collect { dbCategories ->
-            _categories.value = dbCategories.map { category ->
-                CategoryModel(
-                    id = category.id,
-                    title = category.name,
-                    isFavorite = category.isFavorite
-                )
-            }
+    fun deleteExpense(id: Long) {
+        scope.launch {
+            // TODO: Implement delete expense
         }
     }
 
@@ -207,7 +192,7 @@ class HomeViewModel(
         return (0..23).map { hour ->
             val hourExpenses = expenses.filter {
                 try {
-                    val expenseDate = Instant.fromEpochMilliseconds(it.date.toLong())
+                    val expenseDate = Instant.fromEpochMilliseconds(it.date)
                         .toLocalDateTime(TimeZone.currentSystemDefault())
                     expenseDate.hour == hour && expenseDate.date == currentTime.date
                 } catch (e: Exception) {
@@ -228,7 +213,7 @@ class HomeViewModel(
             val date = currentTime.date.minus(DatePeriod(days = daysAgo))
             val dayExpenses = expenses.filter {
                 try {
-                    val expenseDate = Instant.fromEpochMilliseconds(it.date.toLong())
+                    val expenseDate = Instant.fromEpochMilliseconds(it.date)
                         .toLocalDateTime(TimeZone.currentSystemDefault())
                     expenseDate.date == date
                 } catch (e: Exception) {
@@ -254,7 +239,7 @@ class HomeViewModel(
             val endDate = startDate.plus(DatePeriod(days = 6))
             val weekExpenses = expenses.filter {
                 try {
-                    val expenseDate = Instant.fromEpochMilliseconds(it.date.toLong())
+                    val expenseDate = Instant.fromEpochMilliseconds(it.date)
                         .toLocalDateTime(TimeZone.currentSystemDefault())
                     expenseDate.date in startDate..endDate
                 } catch (e: Exception) {
@@ -275,7 +260,7 @@ class HomeViewModel(
             val date = currentTime.date.minus(DatePeriod(months = monthAgo))
             val monthExpenses = expenses.filter {
                 try {
-                    val expenseDate = Instant.fromEpochMilliseconds(it.date.toLong())
+                    val expenseDate = Instant.fromEpochMilliseconds(it.date)
                         .toLocalDateTime(TimeZone.currentSystemDefault())
                     expenseDate.date.month == date.month
                 } catch (e: Exception) {
@@ -292,5 +277,28 @@ class HomeViewModel(
 
     fun selectMonth(month: Month) {
         _selectedMonth.value = month
+    }
+
+    fun setSearchQuery(query: String) {
+        _searchQuery.value = query
+    }
+
+    fun setSelectedCategory(category: String?) {
+        _selectedCategory.value = category
+    }
+
+    fun setSelectedType(type: String?) {
+        _selectedType.value = type
+    }
+
+    fun setDateRange(startDate: Long, endDate: Long) {
+        _dateRange.value = Pair(startDate, endDate)
+    }
+
+    fun clearFilters() {
+        _searchQuery.value = ""
+        _selectedCategory.value = null
+        _selectedType.value = null
+        _dateRange.value = null
     }
 }

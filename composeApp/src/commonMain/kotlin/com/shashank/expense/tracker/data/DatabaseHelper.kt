@@ -6,6 +6,8 @@ import app.cash.sqldelight.db.SqlDriver
 import com.shashank.expense.tracker.db.ExpenseDatabase
 import com.shashank.expense.tracker.db.Expense
 import com.shashank.expense.tracker.db.Category
+import com.shashank.expense.tracker.models.CategoryModel
+import com.shashank.expense.tracker.models.ExpenseModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
@@ -15,25 +17,6 @@ import kotlinx.datetime.Clock
 class DatabaseHelper(sqlDriver: SqlDriver) {
     private val database = ExpenseDatabase(sqlDriver)
     private val queries = database.expenseDatabaseQueries
-    
-    // Domain Models
-    data class ExpenseModel(
-        val id: Long,
-        val title: String,
-        val amount: Double,
-        val category: String,
-        val type: String,
-        val tax: Double,
-        val date: Long,
-        val createdAt: Long
-    )
-    
-    data class CategoryModel(
-        val id: Long,
-        val name: String,
-        val icon: String,
-        val isFavorite: Boolean
-    )
     
     // Expense Operations
     fun getAllExpenses(): Flow<List<ExpenseModel>> =
@@ -104,7 +87,7 @@ class DatabaseHelper(sqlDriver: SqlDriver) {
                 categories.map { category ->
                     CategoryModel(
                         id = category.id,
-                        name = category.name,
+                        title = category.name,
                         icon = category.icon,
                         isFavorite = category.is_favorite == 1L
                     )
@@ -120,7 +103,7 @@ class DatabaseHelper(sqlDriver: SqlDriver) {
                 categories.map { category ->
                     CategoryModel(
                         id = category.id,
-                        name = category.name,
+                        title = category.name,
                         icon = category.icon,
                         isFavorite = category.is_favorite == 1L
                     )
@@ -145,4 +128,85 @@ class DatabaseHelper(sqlDriver: SqlDriver) {
             isFavorite = if (isFavorite) 1L else 0L
         )
     }
+
+    // Search and Filter Operations
+    fun searchExpenses(query: String): Flow<List<ExpenseModel>> =
+        queries
+            .searchExpenses("%$query%")
+            .asFlow()
+            .mapToList(Dispatchers.IO)
+            .map { expenses: List<Expense> ->
+                expenses.map { expense ->
+                    ExpenseModel(
+                        id = expense.id,
+                        title = expense.title,
+                        amount = expense.amount,
+                        category = expense.category,
+                        type = expense.type,
+                        tax = expense.tax,
+                        date = expense.date,
+                        createdAt = expense.created_at
+                    )
+                }
+            }
+
+    fun filterExpensesByDateRange(startDate: Long, endDate: Long): Flow<List<ExpenseModel>> =
+        queries
+            .filterExpensesByDateRange(startDate, endDate)
+            .asFlow()
+            .mapToList(Dispatchers.IO)
+            .map { expenses: List<Expense> ->
+                expenses.map { expense ->
+                    ExpenseModel(
+                        id = expense.id,
+                        title = expense.title,
+                        amount = expense.amount,
+                        category = expense.category,
+                        type = expense.type,
+                        tax = expense.tax,
+                        date = expense.date,
+                        createdAt = expense.created_at
+                    )
+                }
+            }
+
+    fun filterExpensesByCategory(category: String): Flow<List<ExpenseModel>> =
+        queries
+            .getExpensesByCategory(category)
+            .asFlow()
+            .mapToList(Dispatchers.IO)
+            .map { expenses: List<Expense> ->
+                expenses.map { expense ->
+                    ExpenseModel(
+                        id = expense.id,
+                        title = expense.title,
+                        amount = expense.amount,
+                        category = expense.category,
+                        type = expense.type,
+                        tax = expense.tax,
+                        date = expense.date,
+                        createdAt = expense.created_at
+                    )
+                }
+            }
+
+    fun filterExpensesByType(type: String): Flow<List<ExpenseModel>> =
+        queries
+            .filterExpensesByType(type)
+            .asFlow()
+            .mapToList(Dispatchers.IO)
+            .map { expenses: List<Expense> ->
+                expenses.map { expense ->
+                    ExpenseModel(
+                        id = expense.id,
+                        title = expense.title,
+                        amount = expense.amount,
+                        category = expense.category,
+                        type = expense.type,
+                        tax = expense.tax,
+                        date = expense.date,
+                        createdAt = expense.created_at
+                    )
+                }
+            }
 } 

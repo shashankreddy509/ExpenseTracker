@@ -2,12 +2,14 @@ package com.shashank.expense.tracker.auth
 
 import dev.gitlive.firebase.auth.FirebaseAuth
 import dev.gitlive.firebase.auth.FirebaseUser
+import dev.gitlive.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 interface AuthRepository {
     suspend fun signIn(email: String, password: String): Flow<AuthState>
     suspend fun signUp(email: String, password: String): Flow<AuthState>
+    suspend fun signInWithGoogle(idToken: String): Flow<AuthState>
     suspend fun signOut()
     fun getCurrentUser(): FirebaseUser?
 }
@@ -22,8 +24,6 @@ class FirebaseAuthRepository(private val auth: FirebaseAuth) : AuthRepository {
             } ?: emit(AuthState.Error("Sign in failed"))
         } catch (e: Exception) {
             emit(AuthState.Error(e.message ?: "Unknown error occurred"))
-        } finally {
-
         }
     }
 
@@ -36,6 +36,19 @@ class FirebaseAuthRepository(private val auth: FirebaseAuth) : AuthRepository {
             } ?: emit(AuthState.Error("Sign up failed"))
         } catch (e: Exception) {
             emit(AuthState.Error(e.message ?: "Unknown error occurred"))
+        }
+    }
+
+    override suspend fun signInWithGoogle(idToken: String): Flow<AuthState> = flow {
+        emit(AuthState.Loading)
+        try {
+            val credential = GoogleAuthProvider.credential(idToken,null)
+            val result = auth.signInWithCredential(credential)
+            result.user?.let { user ->
+                emit(AuthState.Authenticated(user.uid))
+            } ?: emit(AuthState.Error("Google sign in failed"))
+        } catch (e: Exception) {
+            emit(AuthState.Error(e.message ?: "Google sign in failed"))
         }
     }
 

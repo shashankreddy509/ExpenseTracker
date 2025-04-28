@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -28,17 +27,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.shashank.expense.tracker.screens.homescreen.CategoryModel
-import com.shashank.expense.tracker.screens.homescreen.ExpenseModel
+import com.shashank.expense.tracker.models.ExpenseModel
+import com.shashank.expense.tracker.screens.homescreen.HomeViewModel
 import com.shashank.expense.tracker.screens.homescreen.MonthSelector
 import com.shashank.expense.tracker.utils.CategoryUtils
 import com.shashank.expense.tracker.utils.DateTimeUtils
-import com.shashank.expense.tracker.screens.homescreen.HomeViewModel
 import expensetracker.composeapp.generated.resources.Res
 import expensetracker.composeapp.generated.resources.ic_arrow_right
-import kotlinx.datetime.Instant
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
@@ -120,8 +115,8 @@ fun TransactionScreen(
                     )
                 }
 
-                items(expensesList) { expense ->
-                    TransactionItem(expense = expense)
+                items(expensesList.size) { index ->
+                    TransactionItem(expense = expensesList[index])
                 }
             }
         }
@@ -152,10 +147,10 @@ private fun TransactionItem(expense: ExpenseModel) {
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    painter = painterResource(CategoryUtils.getCategoryIcon(CategoryModel(0, expense.category))),
+                    painter = painterResource(CategoryUtils.getCategoryIcon(expense.category)),
                     contentDescription = null,
                     modifier = Modifier.size(24.dp),
-                    tint = CategoryUtils.getCategoryColor(CategoryModel(0, expense.category))
+                    tint = CategoryUtils.getCategoryColor(expense.category)
                 )
             }
 
@@ -177,16 +172,13 @@ private fun TransactionItem(expense: ExpenseModel) {
             horizontalAlignment = Alignment.End
         ) {
             Text(
-                text = "${if (expense.isIncome) "+" else "-"} $${expense.amount}",
+                text = "${if (expense.type == "income") "+" else "-"} $${expense.amount}",
                 style = MaterialTheme.typography.titleMedium,
-                color = if (expense.isIncome) Color(0xFF00A86B) else Color(0xFFFD3C4A),
+                color = if (expense.type == "income") Color(0xFF00A86B) else Color(0xFFFD3C4A),
                 fontWeight = FontWeight.SemiBold
             )
             Text(
-                text = DateTimeUtils.formatTime(
-                    Instant.fromEpochMilliseconds(expense.date)
-                        .toLocalDateTime(TimeZone.currentSystemDefault())
-                ),
+                text = DateTimeUtils.formatTime(expense.date),
                 style = MaterialTheme.typography.bodySmall,
                 color = Color(0xFF91919F)
             )

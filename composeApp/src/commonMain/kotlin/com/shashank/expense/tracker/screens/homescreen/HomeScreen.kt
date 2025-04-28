@@ -42,20 +42,12 @@ import kotlinx.datetime.*
 import org.jetbrains.compose.resources.painterResource
 import com.shashank.expense.tracker.utils.CategoryUtils
 import com.shashank.expense.tracker.utils.DateTimeUtils
+import com.shashank.expense.tracker.models.ExpenseModel
 
 data class CategoryModel(
     val id: Long,
     val title: String,
     val isFavorite: Boolean = false
-)
-
-data class ExpenseModel(
-    val id: Long,
-    val title: String,
-    val amount: Double,
-    val category: String,
-    val isIncome: Boolean,
-    val date: Long
 )
 
 @Composable
@@ -106,10 +98,7 @@ fun MonthSelector(
         DropdownMenu(
             expanded = isExpanded,
             onDismissRequest = { isExpanded = false },
-            modifier = Modifier
-                .background(Color.White)
-                .defaultMinSize(minWidth = 160.dp),
-            offset = DpOffset(0.dp, 8.dp)
+            modifier = Modifier.background(Color.White)
         ) {
             Month.values().forEach { month ->
                 DropdownMenuItem(
@@ -117,19 +106,13 @@ fun MonthSelector(
                         Text(
                             text = month.name.lowercase()
                                 .replaceFirstChar { it.uppercase() },
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = if (month == selectedMonth) Color(0xFF7F3DFF) else Color(0xFF212224)
+                            style = MaterialTheme.typography.bodyLarge
                         )
                     },
                     onClick = {
                         onMonthSelected(month)
                         isExpanded = false
-                    },
-                    colors = MenuDefaults.itemColors(
-                        textColor = Color(0xFF212224),
-                        leadingIconColor = Color(0xFF7F3DFF),
-                        trailingIconColor = Color(0xFF7F3DFF)
-                    )
+                    }
                 )
             }
         }
@@ -392,10 +375,10 @@ private fun TransactionItem(expense: ExpenseModel) {
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    painter = painterResource(CategoryUtils.getCategoryIcon(CategoryModel(0, expense.category))),
+                    painter = painterResource(CategoryUtils.getCategoryIcon(expense.category)),
                     contentDescription = null,
                     modifier = Modifier.size(24.dp),
-                    tint = CategoryUtils.getCategoryColor(CategoryModel(0, expense.category))
+                    tint = CategoryUtils.getCategoryColor(expense.category)
                 )
             }
 
@@ -416,16 +399,13 @@ private fun TransactionItem(expense: ExpenseModel) {
             horizontalAlignment = Alignment.End
         ) {
             Text(
-                text = if (expense.isIncome) "+$${formatCurrency(expense.amount.toFloat())}" else "-$${formatCurrency(expense.amount.toFloat())}",
+                text = "${if (expense.type == "income") "+" else "-"} $${expense.amount}",
                 style = MaterialTheme.typography.titleMedium,
-                color = if (expense.isIncome) Color(0xFF00A86B) else Color(0xFFFD3C4A),
+                color = if (expense.type == "income") Color(0xFF00A86B) else Color(0xFFFD3C4A),
                 fontWeight = FontWeight.SemiBold
             )
             Text(
-                text = DateTimeUtils.formatTime(
-                    Instant.fromEpochMilliseconds(expense.date)
-                        .toLocalDateTime(TimeZone.currentSystemDefault())
-                ),
+                text = DateTimeUtils.formatTime(expense.date),
                 style = MaterialTheme.typography.bodySmall,
                 color = Color(0xFF91919F)
             )
